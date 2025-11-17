@@ -1,0 +1,2 @@
+# PartyMiniGamesBot
+PartyMiniGamesBot

@@ -2,13 +2,16 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <!-- Важно: запрещаем масштабирование для мобилок -->
+    <!-- Важно: запрещаем зум на мобилках, чтобы ощущалось как приложение -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TRASH PARTY T-APP</title>
-    <!-- Подключаем скрипт Telegram WebApp -->
+    <title>TRASH PARTY APP</title>
+    
+    <!-- Подключение Telegram API -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
+    <!-- Шрифты -->
     <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Rubik+Glitch&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --acid-green: #ccff00;
@@ -16,47 +19,79 @@
             --electric-blue: #00ffff;
             --void-black: #111;
             --warning-red: #ff3333;
+            --bg-dark: #090909;
         }
 
-        /* Убираем выделение текста и подсветку тапов */
-        * { 
-            box-sizing: border-box; 
-            user-select: none; 
-            -webkit-tap-highlight-color: transparent; 
+        * {
+            box-sizing: border-box;
+            user-select: none; /* Запрет выделения текста */
+            -webkit-tap-highlight-color: transparent; /* Убираем синий клик на Андроиде */
         }
 
         body {
             margin: 0;
             padding: 0;
             background-color: var(--void-black);
-            /* Фон подстраиваем под тему, но оставляем паттерн */
             background-image: repeating-linear-gradient(45deg, #050505 0px, #050505 20px, #111 20px, #111 40px);
             color: var(--acid-green);
             font-family: 'Bangers', cursive;
-            /* Блокируем скролл всей страницы (важно для Telegram) */
-            overflow: hidden; 
             height: 100vh;
             width: 100vw;
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden; /* Блокируем скролл всей страницы */
         }
 
-        .container {
-            width: 100%;
-            height: 100%;
-            max-width: 600px;
-            background: rgba(0, 0, 0, 0.90);
-            padding: 15px;
+        /* --- ГЛАВНЫЙ КОНТЕЙНЕР (АДАПТИВНЫЙ) --- */
+        .app-container {
             position: relative;
-            text-align: center;
+            background: rgba(0, 0, 0, 0.95);
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            /* Добавляем прокрутку внутри контейнера, если контент не влезает */
-            overflow-y: auto; 
+            overflow-y: auto; /* Скролл внутри приложения если нужно */
+            overflow-x: hidden;
         }
 
+        /* СТИЛИ ДЛЯ МОБИЛЬНЫХ (По умолчанию) */
+        .app-container {
+            width: 100%;
+            height: 100%;
+            border: none;
+            padding: 15px;
+        }
+
+        /* СТИЛИ ДЛЯ КОМПЬЮТЕРА (Если экран шире 768px) */
+        @media (min-width: 768px) {
+            .app-container {
+                width: 400px; /* Ширина как у мобилки */
+                height: 85vh; /* Не на весь экран, а с отступами */
+                max-height: 800px;
+                border: 4px solid var(--electric-blue);
+                border-radius: 20px; /* Скругление углов */
+                box-shadow: 0 0 30px var(--hot-pink), 0 0 60px rgba(0,0,0,0.5);
+                /* Scrollbar styling for desktop */
+                scrollbar-width: thin;
+                scrollbar-color: var(--acid-green) #000;
+            }
+            
+            /* Красивый скроллбар для Webkit (Chrome) */
+            .app-container::-webkit-scrollbar { width: 8px; }
+            .app-container::-webkit-scrollbar-track { background: #000; }
+            .app-container::-webkit-scrollbar-thumb { background: var(--acid-green); border-radius: 4px; }
+
+            /* Эффекты наведения мышкой (только для ПК) */
+            .btn:hover {
+                transform: translateY(-3px) scale(1.02);
+                filter: brightness(1.2);
+            }
+            .click-area:hover {
+                cursor: pointer;
+                box-shadow: 0 0 30px var(--warning-red);
+            }
+        }
+
+        /* --- ТИПОГРАФИКА И ЭЛЕМЕНТЫ --- */
         h1, h2 {
             font-family: 'Rubik Glitch', cursive;
             font-size: 2.2rem;
@@ -64,6 +99,7 @@
             color: var(--hot-pink);
             text-shadow: 2px 2px 0px var(--acid-green);
             animation: glitch 3s infinite;
+            text-align: center;
             line-height: 1;
         }
 
@@ -75,7 +111,7 @@
             100% { text-shadow: 2px 2px 0px var(--acid-green); }
         }
 
-        /* UI Elements */
+        /* UI */
         .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
 
         input {
@@ -84,19 +120,19 @@
             border: 2px solid var(--acid-green);
             color: white;
             font-family: 'Bangers', cursive;
-            font-size: 1.2rem;
-            padding: 10px;
+            font-size: 1.2rem; /* 16px+ чтобы iOS не зумил */
+            padding: 12px;
             outline: none;
-            border-radius: 8px; /* Скругление для мобилок */
+            border-radius: 8px;
         }
 
         .btn {
             background: var(--hot-pink);
             color: white;
             border: none;
-            padding: 15px; /* Чуть больше для пальца */
+            padding: 16px;
             font-family: 'Bangers', cursive;
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             cursor: pointer;
             box-shadow: 4px 4px 0px var(--electric-blue);
             text-transform: uppercase;
@@ -105,61 +141,79 @@
             margin-bottom: 15px;
             position: relative;
             border-radius: 8px;
+            transition: transform 0.1s;
         }
 
         .btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px var(--electric-blue); }
-        
-        /* Кнопка назад - фиксированная */
-        .btn-back { 
-            width: auto; 
-            position: absolute; 
-            top: 10px; 
-            left: 10px; 
-            font-size: 1rem; 
-            padding: 8px 15px; 
-            z-index: 100; 
+
+        .btn-back {
+            width: auto;
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 1rem;
+            padding: 8px 12px;
+            z-index: 100;
             transform: rotate(-2deg);
+            box-shadow: 2px 2px 0px var(--electric-blue);
         }
 
-        .player-list { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 20px; }
-        .player-tag { background: var(--electric-blue); color: #000; padding: 5px 10px; font-size: 1.1rem; border-radius: 5px; transform: rotate(var(--rot)); }
+        .player-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 20px; }
+        .player-tag { 
+            background: var(--electric-blue); 
+            color: #000; 
+            padding: 5px 10px; 
+            font-size: 1.1rem; 
+            border-radius: 4px; 
+            transform: rotate(var(--rot)); 
+        }
 
-        /* Screens logic */
-        .screen { display: none; height: 100%; flex-direction: column; justify-content: center; }
+        /* SCREENS */
+        .screen { 
+            display: none; 
+            flex-direction: column; 
+            height: 100%; 
+            justify-content: center; 
+            padding-top: 40px; /* Место под кнопку Назад */
+        }
         .screen.active { display: flex; animation: fadeUp 0.3s ease-out; }
+        
+        /* Центрируем контент меню, чтобы он не был растянут */
+        #screen-menu { justify-content: center; padding-top: 0; }
+        
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- GAME SPECIFIC STYLES --- */
+        /* GAME SPECIFICS */
         .card-flip {
             background: #111;
-            color: white;
-            padding: 20px;
-            font-size: 1.5rem;
             border: 2px dashed var(--acid-green);
-            margin: 10px 0;
+            padding: 20px;
+            margin: 20px 0;
             flex-grow: 1;
-            max-height: 40vh;
+            max-height: 50vh; /* Чтобы не растягивалось слишком сильно */
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            flex-direction: column;
             border-radius: 10px;
+            text-align: center;
         }
-        .victim-name { color: var(--hot-pink); font-size: 2rem; margin-bottom: 10px; text-shadow: 2px 2px 0 #000; }
+        .victim-name { color: var(--hot-pink); font-size: 2rem; margin-bottom: 10px; display: block; }
+        .task-text { color: white; font-size: 1.4rem; line-height: 1.3; }
 
         .cylinder {
-            width: 140px;
-            height: 140px;
+            width: 150px;
+            height: 150px;
             border-radius: 50%;
             border: 8px dashed var(--electric-blue);
             margin: 20px auto;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3.5rem;
+            font-size: 4rem;
             transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
         }
-        
+
         .click-area {
             width: 180px;
             height: 180px;
@@ -170,9 +224,8 @@
             align-items: center;
             justify-content: center;
             font-size: 2.5rem;
-            border: 5px solid white;
-            box-shadow: 0 0 15px var(--warning-red);
-            cursor: pointer;
+            border: 6px solid white;
+            box-shadow: 0 0 20px var(--warning-red);
         }
         .click-area:active { transform: scale(0.95); }
 
@@ -180,109 +233,124 @@
 </head>
 <body>
 
-    <div class="container">
+    <div class="app-container">
         
-        <!-- 1. MENU SCREEN -->
+        <!-- 1. MENU -->
         <div id="screen-menu" class="screen active">
-            <h1>TRASH PARTY 4.0</h1>
-            <p style="font-size: 0.9rem; color: #777">Telegram Edition</p>
-            <h2>ВЫБЕРИ ИГРУ</h2>
-            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px; width: 100%;">
+            <h1>TRASH PARTY</h1>
+            <p style="text-align: center; color: #666; font-size: 0.9rem; margin-top: -10px;">Universal Edition</p>
+            <div style="margin-top: 30px; width: 100%;">
                 <button class="btn" onclick="selectGame('tod')" style="background: var(--hot-pink)">Правда / Действие</button>
-                <button class="btn" onclick="selectGame('roulette')" style="background: var(--warning-red)">Русская Рулетка 🔫</button>
-                <button class="btn" onclick="selectGame('clicker')" style="background: var(--electric-blue); color: black;">Спид-Кликер ⚡</button>
+                <button class="btn" onclick="selectGame('roulette')" style="background: var(--warning-red)">Русская Рулетка</button>
+                <button class="btn" onclick="selectGame('clicker')" style="background: var(--electric-blue); color: black;">Спид-Кликер</button>
                 <button class="btn" onclick="selectGame('rps')" style="background: var(--acid-green); color: black;">Камень Ножницы</button>
             </div>
         </div>
 
-        <!-- 2. SETUP SCREEN -->
+        <!-- 2. SETUP -->
         <div id="screen-setup" class="screen">
             <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
-            <h2>КТО ИГРАЕТ?</h2>
-            <p>Впиши жертв (мин. 2)</p>
+            <h2>ИГРОКИ</h2>
             <div class="input-group">
                 <input type="text" id="playerName" placeholder="Имя..." onkeypress="handleEnter(event)" autocomplete="off">
-                <button class="btn" style="width: auto;" onclick="addPlayer()">+</button>
+                <button class="btn" style="width: auto; padding: 0 20px;" onclick="addPlayer()">+</button>
             </div>
             <div class="player-list" id="playersDisplay"></div>
-            <button class="btn" style="background: var(--acid-green); color: black; margin-top: auto;" onclick="launchSelectedGame()">ПОГНАЛИ!</button>
+            <!-- Spacer to push button down -->
+            <div style="flex-grow: 1;"></div>
+            <button class="btn" style="background: var(--acid-green); color: black;" onclick="launchSelectedGame()">НАЧАТЬ ИГРУ</button>
         </div>
 
-        <!-- 3. GAME SCREENS -->
+        <!-- 3. GAMES -->
         
-        <!-- TRUTH OR DARE -->
+        <!-- Truth Or Dare -->
         <div id="screen-tod" class="screen">
             <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
-            <h2>P / D</h2>
+            <h2>ПРАВДА/ДЕЙСТВИЕ</h2>
             <div class="card-flip">
-                <span id="tod-victim" class="victim-name">???</span>
-                <span id="tod-task" style="font-size: 1.2rem; line-height: 1.2;">Жми кнопку...</span>
+                <span id="tod-victim" class="victim-name">Игрок</span>
+                <span id="tod-task" class="task-text">Выбери категорию...</span>
             </div>
-            <div style="display: flex; gap: 10px; width: 100%;">
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                 <button class="btn" style="background: var(--electric-blue); color: black;" onclick="nextTOD('truth')">Правда</button>
                 <button class="btn" style="background: var(--warning-red)" onclick="nextTOD('dare')">Действие</button>
             </div>
         </div>
 
-        <!-- RUSSIAN ROULETTE -->
+        <!-- Roulette -->
         <div id="screen-roulette" class="screen">
             <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
             <h2>РУЛЕТКА</h2>
-            <p id="roulette-player" style="font-size: 1.3rem; color: var(--acid-green)">Игрок: ???</p>
+            <p id="roulette-player" style="text-align: center; color: var(--acid-green); font-size: 1.4rem;">Ход: ???</p>
             <div class="cylinder" id="cylinder">💀</div>
-            <div class="roulette-msg" id="roulette-msg" style="min-height: 3rem;">В барабане 1 патрон...</div>
-            <button class="btn" id="fire-btn" style="background: var(--warning-red)" onclick="fireRoulette()">СПУСТИТЬ КУРОК</button>
-            <button class="btn" id="reset-roulette-btn" style="display:none; background: var(--electric-blue); color:black" onclick="initRoulette()">ЗАРЯДИТЬ СНОВА</button>
+            <div id="roulette-msg" style="text-align: center; min-height: 60px; font-size: 1.3rem; margin: 10px 0;">Крути барабан...</div>
+            <button class="btn" id="fire-btn" style="background: var(--warning-red)" onclick="fireRoulette()">ВЫСТРЕЛ</button>
+            <button class="btn" id="reset-roulette-btn" style="display:none; background: var(--electric-blue); color:black" onclick="initRoulette()">ЗАРЯДИТЬ</button>
         </div>
 
-        <!-- SPEED CLICKER -->
+        <!-- Clicker -->
         <div id="screen-clicker" class="screen">
             <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
             <h2>КЛИКЕР</h2>
-            <p id="clicker-player" style="color: var(--hot-pink)">Готовится: ???</p>
-            <div class="click-stats">
-                <span id="click-timer">10.00</span> сек<br>
-                <span id="click-count" style="font-size: 3rem; color: white;">0</span>
+            <p id="clicker-player" style="text-align: center; color: var(--hot-pink)">Готовься: ???</p>
+            <div style="text-align: center; margin: 20px 0;">
+                <span id="click-timer" style="font-size: 2rem; color: var(--electric-blue)">10.00</span><br>
+                <span id="click-count" style="font-size: 4rem; color: white;">0</span>
             </div>
             <div class="click-area" id="click-btn" onclick="countClick()" style="pointer-events: none; opacity: 0.5;">ЖМИ!</div>
-            <button class="btn" id="start-clicker-btn" onclick="startClickerRun()">СТАРТ</button>
-            <p id="clicker-record" style="font-size: 1rem; margin-top: 10px; color: #888;">Рекорд сессии: 0</p>
+            <button class="btn" id="start-clicker-btn" style="margin-top: 20px;" onclick="startClickerRun()">СТАРТ</button>
+            <p id="clicker-record" style="text-align: center; color: #888;">Рекорд: 0</p>
         </div>
 
         <!-- RPS -->
         <div id="screen-rps" class="screen">
             <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
             <h2>ЦУ-Е-ФА</h2>
-            <p id="rps-player-name" style="color: var(--electric-blue); font-size: 1.2rem;">Твой ход</p>
-            <div style="display: flex; justify-content: space-around; font-size: 3rem; margin: 20px 0;">
-                <div onclick="playRPS('rock')">🗿</div>
-                <div onclick="playRPS('paper')">🧻</div>
-                <div onclick="playRPS('scissors')">✂️</div>
+            <p id="rps-player-name" style="text-align: center; color: var(--electric-blue); margin-bottom: 30px;">Твой ход</p>
+            <div style="display: flex; justify-content: space-around; font-size: 4rem; margin-bottom: 30px;">
+                <div onclick="playRPS('rock')" style="cursor: pointer;">🗿</div>
+                <div onclick="playRPS('paper')" style="cursor: pointer;">🧻</div>
+                <div onclick="playRPS('scissors')" style="cursor: pointer;">✂️</div>
             </div>
-            <div id="rps-result" style="font-size: 1.5rem; color: var(--warning-red); min-height: 50px;"></div>
+            <div id="rps-result" style="text-align: center; font-size: 1.5rem; color: var(--warning-red); min-height: 60px;"></div>
         </div>
 
     </div>
 
 <script>
-    // --- TELEGRAM INITIALIZATION ---
-    const tg = window.Telegram.WebApp;
+    // --- DETECT TELEGRAM ---
+    const tg = window.Telegram?.WebApp;
     
-    // Сообщаем телеграму, что мы готовы и расширяем на весь экран
-    tg.ready();
-    tg.expand();
-    
-    // Настраиваем цвета шапки телеграма под наш дизайн
-    tg.setHeaderColor('#111111'); 
-    tg.setBackgroundColor('#111111');
-
-    // Helper for Native Alerts
-    function tgAlert(msg) {
-        if(tg.showAlert) tg.showAlert(msg);
-        else alert(msg);
+    // Безопасная инициализация
+    if (tg) {
+        tg.ready();
+        try {
+            tg.expand(); // Пытаемся развернуть на весь экран
+            tg.setHeaderColor('#000000');
+            tg.setBackgroundColor('#111111');
+        } catch(e) { console.log("Not in Telegram context"); }
     }
 
-    // --- CONTENT (40 Questions & 40 Actions) ---
+    // Helper: Use native popup if in TG, else standard alert
+    function safeAlert(msg) {
+        if (tg && tg.showPopup) {
+            tg.showPopup({ title: 'Info', message: msg, buttons: [{type: 'ok'}] });
+        } else {
+            alert(msg);
+        }
+    }
+    
+    // Helper: Haptic feedback
+    function haptic(type) {
+        if (tg && tg.HapticFeedback) {
+            if(type === 'light') tg.HapticFeedback.impactOccurred('light');
+            if(type === 'heavy') tg.HapticFeedback.impactOccurred('heavy');
+            if(type === 'success') tg.HapticFeedback.notificationOccurred('success');
+            if(type === 'error') tg.HapticFeedback.notificationOccurred('error');
+        }
+    }
+
+    // --- DATA ---
     const tasks = {
         truth: [
             "Кто из присутствующих бесит тебя больше всего?",
@@ -384,29 +452,29 @@
             renderPlayers();
             input.value = '';
             input.focus();
+            haptic('light');
         }
     }
 
     function renderPlayers() {
         document.getElementById('playersDisplay').innerHTML = players.map(p => 
-            `<span class="player-tag" style="--rot: ${Math.random()*10-5}deg">${p}</span>`
+            `<span class="player-tag" style="--rot: ${Math.random()*8-4}deg">${p}</span>`
         ).join('');
     }
 
-    // 1. SELECT GAME
     function selectGame(gameType) {
         selectedGame = gameType;
         showScreen('screen-setup');
+        haptic('light');
     }
 
-    // 2. LAUNCH
     function launchSelectedGame() {
         if (players.length < 2) { 
-            tgAlert("Нужно минимум 2 игрока!"); 
+            safeAlert("Нужно минимум 2 игрока!"); 
+            haptic('error');
             return; 
         }
         
-        // Route to correct game init
         if (selectedGame === 'tod') initTOD();
         else if (selectedGame === 'roulette') initRoulette();
         else if (selectedGame === 'clicker') initClicker();
@@ -416,6 +484,7 @@
     function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
+        haptic('light');
     }
     function getRandomPlayer() { return players[Math.floor(Math.random() * players.length)]; }
 
@@ -427,9 +496,7 @@
     }
 
     function nextTOD(type) {
-        // Haptic feedback for clicks
-        if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-
+        haptic('light');
         const list = tasks[type];
         const task = list[Math.floor(Math.random() * list.length)];
         const victimEl = document.getElementById('tod-victim');
@@ -444,17 +511,13 @@
                 victimEl.innerText = getRandomPlayer();
                 taskEl.innerText = task;
                 victimEl.style.color = type === 'truth' ? 'var(--electric-blue)' : 'var(--warning-red)';
-                // Success haptic
-                if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                haptic('success');
             }
         }, 50);
     }
 
-    // --- RUSSIAN ROULETTE ---
-    let chambers = 6;
-    let bulletPos = 0;
-    let currentChamber = 0;
-    let roulettePlayerIndex = 0;
+    // --- ROULETTE ---
+    let chambers, bulletPos, currentChamber, roulettePlayerIndex;
 
     function initRoulette() {
         showScreen('screen-roulette');
@@ -463,14 +526,13 @@
         bulletPos = Math.floor(Math.random() * 6); 
         roulettePlayerIndex = Math.floor(Math.random() * players.length);
         
-        document.getElementById('roulette-msg').innerText = "Барабан прокручен. Удачи.";
+        document.getElementById('roulette-msg').innerText = "Барабан прокручен...";
         document.getElementById('roulette-msg').style.color = "white";
         document.getElementById('cylinder').style.transform = "rotate(0deg)";
         document.getElementById('cylinder').innerText = "💀";
         document.getElementById('fire-btn').style.display = "inline-block";
         document.getElementById('reset-roulette-btn').style.display = "none";
-        document.body.style.backgroundColor = "var(--void-black)"; // reset bg
-        
+        document.querySelector('.app-container').style.background = "rgba(0,0,0,0.95)";
         updateRoulettePlayer();
     }
 
@@ -479,27 +541,23 @@
     }
 
     function fireRoulette() {
-        if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
-
+        haptic('heavy');
         const cyl = document.getElementById('cylinder');
         const msg = document.getElementById('roulette-msg');
         
-        // Rotation effect
         cyl.style.transform = `rotate(${360 + (currentChamber * 60)}deg)`;
 
         setTimeout(() => {
             if (currentChamber === bulletPos) {
-                // BANG
-                msg.innerText = "ВЫСТРЕЛ! ТЫ ТРУП! (Пей до дна)";
+                msg.innerText = "ВЫСТРЕЛ! (Пей)";
                 msg.style.color = "var(--warning-red)";
                 cyl.innerText = "💥";
-                document.body.style.backgroundColor = "#500";
+                document.querySelector('.app-container').style.background = "#500";
                 document.getElementById('fire-btn').style.display = "none";
                 document.getElementById('reset-roulette-btn').style.display = "inline-block";
-                if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+                haptic('error');
             } else {
-                // CLICK
-                msg.innerText = "ЩЕЛЧОК... Живи пока.";
+                msg.innerText = "ПУСТО... Фух.";
                 msg.style.color = "var(--acid-green)";
                 currentChamber++;
                 roulettePlayerIndex = (roulettePlayerIndex + 1) % players.length;
@@ -508,11 +566,10 @@
         }, 300);
     }
 
-    // --- SPEED CLICKER ---
+    // --- CLICKER ---
     let clickCount = 0;
-    let clickTime = 10;
-    let clickTimerInt = null;
     let clickSessionRecord = 0;
+    let clickTimerInt = null;
 
     function initClicker() {
         showScreen('screen-clicker');
@@ -529,7 +586,6 @@
         btn.innerText = "ЖМИ!";
         document.getElementById('start-clicker-btn').style.display = "inline-block";
         clickCount = 0;
-        clickTime = 10;
     }
 
     function startClickerRun() {
@@ -544,7 +600,7 @@
             btn.style.pointerEvents = "auto";
             btn.style.opacity = "1";
             btn.style.background = "var(--hot-pink)";
-            if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
+            haptic('success');
             
             const startTime = Date.now();
             clickTimerInt = setInterval(() => {
@@ -562,10 +618,7 @@
     function countClick() {
         clickCount++;
         document.getElementById('click-count').innerText = clickCount;
-        
-        // Vibration on every 5th click to save battery/feel
-        if(clickCount % 5 === 0 && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-
+        if(clickCount % 5 === 0) haptic('light');
         const btn = document.getElementById('click-btn');
         btn.style.transform = "scale(0.9)";
         setTimeout(() => btn.style.transform = "scale(1)", 50);
@@ -583,18 +636,14 @@
         let msg = "";
         if (clickCount > clickSessionRecord) {
             clickSessionRecord = clickCount;
-            document.getElementById('clicker-record').innerText = "🔥 НОВЫЙ РЕКОРД: " + clickSessionRecord;
-            msg = `МОЩЬ! Твой результат: ${clickCount}. Это новый рекорд!`;
+            document.getElementById('clicker-record').innerText = "🔥 РЕКОРД: " + clickSessionRecord;
+            msg = `НОВЫЙ РЕКОРД: ${clickCount}!`;
+            haptic('success');
         } else {
-            msg = `Время вышло! Твой результат: ${clickCount}.`;
+            msg = `Результат: ${clickCount}`;
         }
         
-        if(tg.showPopup) {
-            tg.showPopup({ title: 'Результат', message: msg, buttons: [{type: 'ok'}] });
-        } else {
-            alert(msg);
-        }
-        
+        safeAlert(msg);
         setTimeout(resetClickerUI, 2000);
     }
 
@@ -617,982 +666,19 @@
             (choice === 'paper' && botChoice === 'rock') ||
             (choice === 'scissors' && botChoice === 'paper')
         ) { 
-            msg = "ПОБЕДА!"; 
-            resDiv.style.color = "var(--acid-green)"; 
-            if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-        } 
-        else { 
-            msg = "ЛУЗЕР! ПЕЙ!"; 
-            resDiv.style.color = "var(--warning-red)"; 
-            if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+            msg = "ПОБЕДА!"; resDiv.style.color = "var(--acid-green)"; 
+            haptic('success');
+        } else { 
+            msg = "ЛУЗЕР! ПЕЙ!"; resDiv.style.color = "var(--warning-red)"; 
+            haptic('error');
         }
         
-        resDiv.innerHTML = `Комп: ${botChoice === 'rock'?'🗿':(botChoice==='paper'?'🧻':'✂️')} <br> ${msg}`;
+        resDiv.innerHTML = `Бот: ${botChoice === 'rock'?'🗿':(botChoice==='paper'?'🧻':'✂️')} <br> ${msg}`;
         setTimeout(() => {
             document.getElementById('rps-player-name').innerText = getRandomPlayer() + ", теперь ты!";
             resDiv.innerText = "";
-        }, 2000);
-    }
-</script>
-</body>
-</html>            background: rgba(0, 0, 0, 0.95);
-            padding: 15px;
-            box-shadow: 8px 8px 0px var(--hot-pink);
-            position: relative;
-            text-align: center;
-            min-height: 80vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        h1, h2 {
-            font-family: 'Rubik Glitch', cursive;
-            font-size: 2.5rem;
-            margin: 10px 0;
-            color: var(--hot-pink);
-            text-shadow: 2px 2px 0px var(--acid-green);
-            animation: glitch 3s infinite;
-            line-height: 1;
-        }
-
-        @keyframes glitch {
-            0% { text-shadow: 2px 2px 0px var(--acid-green); }
-            20% { text-shadow: -2px 2px 0px var(--electric-blue); }
-            40% { text-shadow: -2px -2px 0px var(--warning-red); }
-            60% { text-shadow: 2px -2px 0px var(--hot-pink); }
-            100% { text-shadow: 2px 2px 0px var(--acid-green); }
-        }
-
-        /* INPUTS & UI */
-        .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
-
-        input {
-            flex: 1;
-            background: #000;
-            border: 2px solid var(--acid-green);
-            color: white;
-            font-family: 'Bangers', cursive;
-            font-size: 1.2rem;
-            padding: 10px;
-            outline: none;
-            border-radius: 0;
-        }
-
-        .btn {
-            background: var(--hot-pink);
-            color: white;
-            border: none;
-            padding: 12px;
-            font-family: 'Bangers', cursive;
-            font-size: 1.4rem;
-            cursor: pointer;
-            box-shadow: 4px 4px 0px var(--electric-blue);
-            text-transform: uppercase;
-            touch-action: manipulation;
-            width: 100%;
-            margin-bottom: 10px;
-            position: relative;
-        }
-
-        .btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px var(--electric-blue); }
-        .btn-back { width: auto; position: absolute; top: 10px; left: 10px; font-size: 1rem; padding: 5px 10px; z-index: 100; transform: rotate(-2deg);}
-
-        .player-list { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 20px; }
-        .player-tag { background: var(--electric-blue); color: #000; padding: 3px 8px; font-size: 1rem; border: 1px solid #000; transform: rotate(var(--rot)); }
-
-        .screen { display: none; height: 100%; }
-        .screen.active { display: block; animation: fadeUp 0.3s ease-out; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- TRUTH OR DARE --- */
-        .card-flip {
-            background: #111;
-            color: white;
-            padding: 20px;
-            font-size: 1.6rem;
-            border: 3px dashed var(--acid-green);
-            margin: 20px 0;
-            min-height: 250px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
-        .victim-name { color: var(--hot-pink); font-size: 2.2rem; margin-bottom: 10px; text-shadow: 2px 2px 0 #000; }
-
-        /* --- RUSSIAN ROULETTE --- */
-        .cylinder {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            border: 10px dashed var(--electric-blue);
-            margin: 30px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 4rem;
-            transition: transform 0.5s;
-        }
-        .roulette-msg { font-size: 1.5rem; min-height: 60px; color: var(--warning-red); }
-
-        /* --- CLICKER --- */
-        .click-area {
-            width: 200px;
-            height: 200px;
-            background: var(--warning-red);
-            border-radius: 50%;
-            margin: 20px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            border: 5px solid white;
-            box-shadow: 0 0 20px var(--warning-red);
-            cursor: pointer;
-            user-select: none;
-        }
-        .click-area:active { transform: scale(0.95); background: #cc0000; }
-        .click-stats { font-size: 2rem; color: var(--electric-blue); margin: 10px 0; }
-
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        
-        <!-- 1. MENU SCREEN (ТЕПЕРЬ ПЕРВЫЙ) -->
-        <div id="screen-menu" class="screen active">
-            <h1>TRASH PARTY 4.0</h1>
-            <h2>ВЫБЕРИ ИГРУ</h2>
-            <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
-                <button class="btn" onclick="selectGame('tod')" style="background: var(--hot-pink)">Правда / Действие</button>
-                <button class="btn" onclick="selectGame('roulette')" style="background: var(--warning-red)">Русская Рулетка 🔫</button>
-                <button class="btn" onclick="selectGame('clicker')" style="background: var(--electric-blue); color: black;">Спид-Кликер ⚡</button>
-                <button class="btn" onclick="selectGame('rps')" style="background: var(--acid-green); color: black;">Камень Ножницы</button>
-            </div>
-        </div>
-
-        <!-- 2. SETUP SCREEN (ТЕПЕРЬ ВТОРОЙ) -->
-        <div id="screen-setup" class="screen">
-            <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
-            <h2>КТО ИГРАЕТ?</h2>
-            <p>Впиши жертв (мин. 2)</p>
-            <div class="input-group">
-                <input type="text" id="playerName" placeholder="Имя..." onkeypress="handleEnter(event)" autocomplete="off">
-                <button class="btn" style="width: auto;" onclick="addPlayer()">OK</button>
-            </div>
-            <div class="player-list" id="playersDisplay"></div>
-            <button class="btn" style="background: var(--acid-green); color: black;" onclick="launchSelectedGame()">ПОГНАЛИ!</button>
-        </div>
-
-        <!-- 3. GAME SCREENS -->
-        
-        <!-- TRUTH OR DARE -->
-        <div id="screen-tod" class="screen">
-            <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
-            <h2>P / D</h2>
-            <div class="card-flip">
-                <span id="tod-victim" class="victim-name">???</span>
-                <span id="tod-task">Жми кнопку...</span>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn" style="background: var(--electric-blue); color: black;" onclick="nextTOD('truth')">Правда</button>
-                <button class="btn" style="background: var(--warning-red)" onclick="nextTOD('dare')">Действие</button>
-            </div>
-        </div>
-
-        <!-- RUSSIAN ROULETTE -->
-        <div id="screen-roulette" class="screen">
-            <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
-            <h2>РУЛЕТКА</h2>
-            <p id="roulette-player" style="font-size: 1.5rem; color: var(--acid-green)">Игрок: ???</p>
-            <div class="cylinder" id="cylinder">💀</div>
-            <div class="roulette-msg" id="roulette-msg">В барабане 1 патрон...</div>
-            <button class="btn" id="fire-btn" style="background: var(--warning-red)" onclick="fireRoulette()">СПУСТИТЬ КУРОК</button>
-            <button class="btn" id="reset-roulette-btn" style="display:none; background: var(--electric-blue); color:black" onclick="initRoulette()">ЗАРЯДИТЬ СНОВА</button>
-        </div>
-
-        <!-- SPEED CLICKER -->
-        <div id="screen-clicker" class="screen">
-            <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
-            <h2>КЛИКЕР</h2>
-            <p id="clicker-player" style="color: var(--hot-pink)">Готовится: ???</p>
-            <div class="click-stats">
-                <span id="click-timer">10.00</span> сек<br>
-                <span id="click-count" style="font-size: 3rem; color: white;">0</span>
-            </div>
-            <div class="click-area" id="click-btn" onclick="countClick()" style="pointer-events: none; opacity: 0.5;">ЖМИ!</div>
-            <button class="btn" id="start-clicker-btn" onclick="startClickerRun()">СТАРТ</button>
-            <p id="clicker-record" style="font-size: 1rem; margin-top: 10px; color: #888;">Рекорд сессии: 0</p>
-        </div>
-
-        <!-- RPS -->
-        <div id="screen-rps" class="screen">
-            <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
-            <h2>ЦУ-Е-ФА</h2>
-            <p id="rps-player-name" style="color: var(--electric-blue); font-size: 1.2rem;">Твой ход</p>
-            <div style="display: flex; justify-content: space-around; font-size: 3rem; margin: 20px 0;">
-                <div onclick="playRPS('rock')">🗿</div>
-                <div onclick="playRPS('paper')">🧻</div>
-                <div onclick="playRPS('scissors')">✂️</div>
-            </div>
-            <div id="rps-result" style="font-size: 1.5rem; color: var(--warning-red); min-height: 50px;"></div>
-        </div>
-
-    </div>
-
-<script>
-    // --- 40 QUESTIONS & 40 ACTIONS ---
-    const tasks = {
-        truth: [
-            "Кто из присутствующих бесит тебя больше всего?",
-            "Какое самое тупое сообщение ты отправлял?",
-            "Когда последний раз ты не мылся 2 дня?",
-            "Покажи последние 3 фото в галерее.",
-            "В кого ты был тайно влюблен?",
-            "Что ты своровал в магазине?",
-            "Сколько денег у тебя сейчас на карте?",
-            "Какую самую странную порнуху ты смотрел?",
-            "Кого из этой комнаты ты бы спас первым при зомби-апокалипсисе?",
-            "Расскажи о своей самой позорной пьянке.",
-            "Ты когда-нибудь нюхал свое нижнее белье?",
-            "Какой самый ужасный подарок ты передаривал?",
-            "Чью переписку ты бы хотел прочитать?",
-            "Ты когда-нибудь писал в раковину?",
-            "Какой самый глупый способ, которым ты получил травму?",
-            "Если бы тебе пришлось убить одного человека здесь, кто бы это был?",
-            "Что самое дорогое ты сломал и скрыл это?",
-            "Ты когда-нибудь симулировал болезнь, чтобы не идти на встречу?",
-            "Какое прозвище у тебя было в школе?",
-            "Что ты делаешь, когда остаешься дома один?",
-            "Кто из игроков одевается хуже всех?",
-            "Ты когда-нибудь отправлял нюдсы не тому человеку?",
-            "Чего ты больше всего боишься в постели?",
-            "Ты когда-нибудь врал про свой возраст?",
-            "Назови одну черту характера соседа справа, которую ты ненавидишь.",
-            "Ты когда-нибудь писал в бассейн?",
-            "С кем из бывших ты бы переспал снова?",
-            "Какую часть тела ты бы в себе изменил?",
-            "Ты когда-нибудь крал деньги у родителей?",
-            "Назови самую глупую причину, по которой ты кого-то бросил.",
-            "Ты храпишь во сне?",
-            "Когда ты последний раз плакал и почему?",
-            "Ты ревнуешь своих друзей к другим?",
-            "Твое самое странное 'постыдное удовольствие' (Guilty Pleasure)?",
-            "Ты веришь в призраков или инопланетян?",
-            "Какую еду ты ненавидишь до тошноты?",
-            "Ты когда-нибудь отправлял сообщение, о котором жалел сразу же?",
-            "Если бы ты был другого пола на один день, что бы сделал первым делом?",
-            "Оцени свою внешность от 1 до 10 честно.",
-            "Какой самый странный сон тебе снился?"
-        ],
-        dare: [
-            "Изобрази тверк на 10 секунд.",
-            "Дай любому игроку шлепнуть тебя.",
-            "Позвони бывшему/бывшей и промяукай.",
-            "Выпей стакан воды без рук.",
-            "Оближи локоть соседа.",
-            "Сделай массаж ног игроку справа.",
-            "Съешь ложку чего угодно из холодильника (выбирают другие).",
-            "Дай свой телефон на 1 минуту другому игроку.",
-            "Стой в планке, пока другие игроки не разрешат встать (макс 1 мин).",
-            "Изобрази оргазм громко.",
-            "Лизни пол.",
-            "Позвони родителям и скажи, что тебя отчислили/уволили.",
-            "Опустоши свои карманы.",
-            "Пусть игрок слева нарисует усы тебе на лице.",
-            "Нюхай носки соседа справа 10 секунд.",
-            "Говори с акцентом следующие 3 раунда.",
-            "Сделай 20 приседаний прямо сейчас.",
-            "Положи лед себе в трусы и жди пока растает.",
-            "Выпей шот чего-нибудь соленого.",
-            "Отправь последнее фото из галереи 5-му контакту в мессенджере.",
-            "Читай рэп про игрока напротив.",
-            "Сними один предмет одежды.",
-            "Поцелуй руку каждому игроку в комнате.",
-            "Изображай обезьяну до следующего хода.",
-            "Выпей стакан воды залпом.",
-            "Изобрази курицу, которая несет яйцо.",
-            "Пусть группа сделает тебе смешную прическу, ходи так 2 раунда.",
-            "Съешь зубчик чеснока или кусок лука.",
-            "Говори шепотом до следующего своего хода.",
-            "Понюхай подмышку соседа слева.",
-            "Сделай мостик (или попытайся).",
-            "Разреши прочитать твое последнее отправленное СМС вслух.",
-            "Изобрази пьяного в стельку человека.",
-            "Танцуй медляк со шваброй или стулом.",
-            "Съешь кусочек лимона вместе с кожурой.",
-            "Позволь накрасить тебе губы (парням тоже).",
-            "Сделай селфи с унитазом и выложи в сторис на 5 минут.",
-            "Расскажи детский стишок, стоя на стуле.",
-            "Засунь палец в ухо соседу и держи 5 секунд.",
-            "Покажи историю браузера за сегодня."
-        ]
-    };
-
-    // --- GLOBAL LOGIC ---
-    let players = [];
-    let selectedGame = null;
-    
-    function handleEnter(e) { if(e.key === 'Enter') addPlayer(); }
-
-    function addPlayer() {
-        const input = document.getElementById('playerName');
-        const name = input.value.trim();
-        if (name && !players.includes(name)) {
-            players.push(name);
-            renderPlayers();
-            input.value = '';
-            input.focus();
-        }
-    }
-
-    function renderPlayers() {
-        document.getElementById('playersDisplay').innerHTML = players.map(p => 
-            `<span class="player-tag" style="--rot: ${Math.random()*10-5}deg">${p}</span>`
-        ).join('');
-    }
-
-    // 1. SELECT GAME
-    function selectGame(gameType) {
-        selectedGame = gameType;
-        showScreen('screen-setup');
-    }
-
-    // 2. LAUNCH GAME AFTER SETUP
-    function launchSelectedGame() {
-        if (players.length < 2) { alert("Минимум 2 игрока!"); return; }
-        
-        // Route to correct game init
-        if (selectedGame === 'tod') initTOD();
-        else if (selectedGame === 'roulette') initRoulette();
-        else if (selectedGame === 'clicker') initClicker();
-        else if (selectedGame === 'rps') initRPS();
-    }
-
-    function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
-    function getRandomPlayer() { return players[Math.floor(Math.random() * players.length)]; }
-
-    // --- TRUTH OR DARE ---
-    function initTOD() {
-        showScreen('screen-tod');
-        document.getElementById('tod-victim').innerText = "???";
-        document.getElementById('tod-task').innerText = "Готовься...";
-    }
-
-    function nextTOD(type) {
-        const list = tasks[type];
-        const task = list[Math.floor(Math.random() * list.length)];
-        const victimEl = document.getElementById('tod-victim');
-        const taskEl = document.getElementById('tod-task');
-        
-        let count = 0;
-        const interval = setInterval(() => {
-            victimEl.innerText = players[Math.floor(Math.random() * players.length)];
-            count++;
-            if(count > 8) {
-                clearInterval(interval);
-                victimEl.innerText = getRandomPlayer();
-                taskEl.innerText = task;
-                victimEl.style.color = type === 'truth' ? 'var(--electric-blue)' : 'var(--warning-red)';
-            }
-        }, 50);
-    }
-
-    // --- RUSSIAN ROULETTE ---
-    let chambers = 6;
-    let bulletPos = 0;
-    let currentChamber = 0;
-    let roulettePlayerIndex = 0;
-
-    function initRoulette() {
-        showScreen('screen-roulette');
-        chambers = 6;
-        currentChamber = 0;
-        bulletPos = Math.floor(Math.random() * 6); 
-        roulettePlayerIndex = Math.floor(Math.random() * players.length);
-        
-        document.getElementById('roulette-msg').innerText = "Барабан прокручен. Удачи.";
-        document.getElementById('roulette-msg').style.color = "white";
-        document.getElementById('cylinder').style.transform = "rotate(0deg)";
-        document.getElementById('cylinder').innerText = "💀";
-        document.getElementById('fire-btn').style.display = "inline-block";
-        document.getElementById('reset-roulette-btn').style.display = "none";
-        document.body.style.background = "var(--void-black)";
-        
-        updateRoulettePlayer();
-    }
-
-    function updateRoulettePlayer() {
-        document.getElementById('roulette-player').innerText = "Стреляет: " + players[roulettePlayerIndex];
-    }
-
-    function fireRoulette() {
-        const cyl = document.getElementById('cylinder');
-        const msg = document.getElementById('roulette-msg');
-        
-        // Rotation effect
-        cyl.style.transform = `rotate(${360 + (currentChamber * 60)}deg)`;
-
-        setTimeout(() => {
-            if (currentChamber === bulletPos) {
-                // BANG
-                msg.innerText = "ВЫСТРЕЛ! ТЫ ТРУП! (Пей до дна)";
-                msg.style.color = "var(--warning-red)";
-                cyl.innerText = "💥";
-                document.body.style.backgroundColor = "#500";
-                document.getElementById('fire-btn').style.display = "none";
-                document.getElementById('reset-roulette-btn').style.display = "inline-block";
-            } else {
-                // CLICK
-                msg.innerText = "ЩЕЛЧОК... Живи пока.";
-                msg.style.color = "var(--acid-green)";
-                currentChamber++;
-                roulettePlayerIndex = (roulettePlayerIndex + 1) % players.length;
-                updateRoulettePlayer();
-            }
-        }, 300);
-    }
-
-    // --- SPEED CLICKER ---
-    let clickCount = 0;
-    let clickTime = 10;
-    let clickTimerInt = null;
-    let clickSessionRecord = 0;
-
-    function initClicker() {
-        showScreen('screen-clicker');
-        resetClickerUI();
-    }
-
-    function resetClickerUI() {
-        document.getElementById('clicker-player').innerText = "След. игрок: " + getRandomPlayer();
-        document.getElementById('click-count').innerText = "0";
-        document.getElementById('click-timer').innerText = "10.00";
-        const btn = document.getElementById('click-btn');
-        btn.style.pointerEvents = "none";
-        btn.style.opacity = "0.5";
-        btn.innerText = "ЖМИ!";
-        document.getElementById('start-clicker-btn').style.display = "inline-block";
-        clickCount = 0;
-        clickTime = 10;
-    }
-
-    function startClickerRun() {
-        document.getElementById('start-clicker-btn').style.display = "none";
-        const btn = document.getElementById('click-btn');
-        btn.innerText = "3...";
-        
-        setTimeout(() => { btn.innerText = "2..."; }, 700);
-        setTimeout(() => { btn.innerText = "1..."; }, 1400);
-        setTimeout(() => {
-            btn.innerText = "🔥";
-            btn.style.pointerEvents = "auto";
-            btn.style.opacity = "1";
-            btn.style.background = "var(--hot-pink)";
-            
-            const startTime = Date.now();
-            clickTimerInt = setInterval(() => {
-                let elapsed = (Date.now() - startTime) / 1000;
-                let left = 10 - elapsed;
-                if (left <= 0) {
-                    endClickerGame();
-                } else {
-                    document.getElementById('click-timer').innerText = left.toFixed(2);
-                }
-            }, 50);
-        }, 2100);
-    }
-
-    function countClick() {
-        clickCount++;
-        document.getElementById('click-count').innerText = clickCount;
-        // Visual feedback
-        const btn = document.getElementById('click-btn');
-        btn.style.transform = "scale(0.9)";
-        setTimeout(() => btn.style.transform = "scale(1)", 50);
-    }
-
-    function endClickerGame() {
-        clearInterval(clickTimerInt);
-        document.getElementById('click-timer').innerText = "0.00";
-        const btn = document.getElementById('click-btn');
-        btn.style.pointerEvents = "none";
-        btn.style.opacity = "0.5";
-        btn.style.background = "var(--warning-red)";
-        btn.innerText = "СТОП";
-        
-        if (clickCount > clickSessionRecord) {
-            clickSessionRecord = clickCount;
-            document.getElementById('clicker-record').innerText = "🔥 НОВЫЙ РЕКОРД: " + clickSessionRecord;
-            alert(`МОЩЬ! Твой результат: ${clickCount}. Это новый рекорд!`);
-        } else {
-            alert(`Время вышло! Твой результат: ${clickCount}.`);
-        }
-        
-        setTimeout(resetClickerUI, 2000);
-    }
-
-    // --- RPS ---
-    function initRPS() {
-        showScreen('screen-rps');
-        document.getElementById('rps-player-name').innerText = getRandomPlayer() + ", твой ход!";
-        document.getElementById('rps-result').innerText = "";
-    }
-
-    function playRPS(choice) {
-        const bots = ['rock', 'paper', 'scissors'];
-        const botChoice = bots[Math.floor(Math.random() * 3)];
-        const resDiv = document.getElementById('rps-result');
-        let msg = "";
-        
-        if (choice === botChoice) { msg = "НИЧЬЯ! ПЕЙ!"; resDiv.style.color = "white"; }
-        else if (
-            (choice === 'rock' && botChoice === 'scissors') ||
-            (choice === 'paper' && botChoice === 'rock') ||
-            (choice === 'scissors' && botChoice === 'paper')
-        ) { msg = "ПОБЕДА!"; resDiv.style.color = "var(--acid-green)"; } 
-        else { msg = "ЛУЗЕР! ПЕЙ!"; resDiv.style.color = "var(--warning-red)"; }
-        
-        resDiv.innerHTML = `Комп: ${botChoice === 'rock'?'🗿':(botChoice==='paper'?'🧻':'✂️')} <br> ${msg}`;
-        setTimeout(() => {
-            document.getElementById('rps-player-name').innerText = getRandomPlayer() + ", теперь ты!";
-            resDiv.innerText = "";
-        }, 2000);
-    }
-</script>
-</body>
-</html>
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 50% 50%, rgba(255,0,255,0.1), transparent);
-            animation: pulse 2s infinite;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.5); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 0.5; }
-        }
-
-        .container {
-            width: 95%;
-            max-width: 600px;
-            border: 5px solid var(--electric-blue);
-            background: rgba(0, 0, 0, 0.95);
-            padding: 20px;
-            box-shadow: 10px 10px 0px var(--hot-pink);
-            position: relative;
-            text-align: center;
-        }
-
-        h1, h2 {
-            font-family: 'Rubik Glitch', cursive;
-            font-size: 2.8rem;
-            margin: 10px 0;
-            color: var(--hot-pink);
-            text-shadow: 3px 3px 0px var(--acid-green);
-            animation: glitch 3s infinite;
-            line-height: 1;
-        }
-
-        @keyframes glitch {
-            0% { text-shadow: 3px 3px 0px var(--acid-green); }
-            20% { text-shadow: -3px 3px 0px var(--electric-blue); }
-            40% { text-shadow: -3px -3px 0px var(--warning-red); }
-            60% { text-shadow: 3px -3px 0px var(--hot-pink); }
-            100% { text-shadow: 3px 3px 0px var(--acid-green); }
-        }
-
-        /* INPUTS & LISTS */
-        .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
-
-        input {
-            flex: 1;
-            background: #000;
-            border: 3px solid var(--acid-green);
-            color: white;
-            font-family: 'Bangers', cursive;
-            font-size: 1.5rem;
-            padding: 10px;
-            outline: none;
-            border-radius: 0;
-        }
-
-        .btn {
-            background: var(--hot-pink);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            font-family: 'Bangers', cursive;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: 0.1s;
-            box-shadow: 5px 5px 0px var(--electric-blue);
-            text-transform: uppercase;
-            touch-action: manipulation; /* Улучшает клик на мобилках */
-        }
-
-        .btn:active { transform: translate(5px, 5px); box-shadow: none; }
-        .btn-danger { background: var(--warning-red); box-shadow: 5px 5px 0px #fff; }
-        .btn-menu { width: 100%; margin: 10px 0; font-size: 2rem; }
-        .btn-back { position: absolute; top: -20px; left: -20px; font-size: 1rem; transform: rotate(-5deg); z-index: 10;}
-
-        .player-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 20px;
-            min-height: 50px;
-        }
-
-        .player-tag {
-            background: var(--electric-blue);
-            color: #000;
-            padding: 5px 10px;
-            font-size: 1.2rem;
-            transform: rotate(var(--rot));
-            border: 2px solid #000;
-        }
-
-        /* SECTIONS */
-        .screen { display: none; }
-        .screen.active { display: block; animation: shake 0.3s ease-out; }
-
-        @keyframes shake {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            50% { transform: translateX(10px); }
-            75% { transform: translateX(-5px); }
-            100% { transform: translateX(0); }
-        }
-
-        /* --- GAME SPECIFIC --- */
-        
-        /* TOD */
-        .card-flip {
-            background: var(--warning-red);
-            color: white;
-            padding: 20px;
-            font-size: 1.8rem;
-            border: 4px dashed yellow;
-            margin: 20px 0;
-            min-height: 220px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
-        .victim-name { color: var(--acid-green); font-size: 2.5rem; display: block; margin-bottom: 15px; text-shadow: 2px 2px 0 #000; line-height: 1;}
-
-        /* TTT */
-        .ttt-board {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin: 20px auto;
-            max-width: 300px;
-        }
-        .cell {
-            background: #222;
-            height: 80px;
-            border: 2px solid var(--acid-green);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            cursor: pointer;
-        }
-        .cell.X { color: var(--hot-pink); text-shadow: 0 0 10px var(--hot-pink); }
-        .cell.O { color: var(--electric-blue); text-shadow: 0 0 10px var(--electric-blue); }
-        .versus { font-size: 1.5rem; color: white; margin-bottom: 10px; }
-
-        /* RPS */
-        .rps-arena { display: flex; justify-content: space-around; align-items: center; font-size: 3.5rem; margin: 20px 0; }
-        .rps-choice { cursor: pointer; transition: 0.2s; padding: 10px; border: 2px solid transparent; }
-        .rps-choice:hover, .rps-choice:active { transform: scale(1.2) rotate(10deg); border-color: var(--acid-green); border-radius: 50%; background: #222; }
-        .winner-text { font-size: 1.8rem; color: var(--warning-red); min-height: 60px; line-height: 1.2; }
-
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        
-        <!-- SETUP SCREEN -->
-        <div id="screen-setup" class="screen active">
-            <h1>КТО НА ТУСЕ?</h1>
-            <p>Впиши имена (минимум 2)</p>
-            <div class="input-group">
-                <input type="text" id="playerName" placeholder="Имя..." onkeypress="handleEnter(event)" autocomplete="off">
-                <button class="btn" onclick="addPlayer()">+</button>
-            </div>
-            <div class="player-list" id="playersDisplay"></div>
-            <button class="btn btn-danger btn-menu" onclick="startGameParams()">ПОГНАЛИ!</button>
-        </div>
-
-        <!-- MENU SCREEN -->
-        <div id="screen-menu" class="screen">
-            <button class="btn btn-back" onclick="showScreen('screen-setup')">Назад</button>
-            <h1>ТРЕШ МЕНЮ</h1>
-            <button class="btn btn-menu" onclick="initTOD()" style="background: var(--hot-pink)">Правда / Действие</button>
-            <button class="btn btn-menu" onclick="initTTT()" style="background: var(--electric-blue)">Крестики Нолики</button>
-            <button class="btn btn-menu" onclick="initRPS()" style="background: var(--acid-green); color: black;">Камень Ножницы</button>
-        </div>
-
-        <!-- TRUTH OR DARE -->
-        <div id="screen-tod" class="screen">
-            <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
-            <h2>Правда или ТРЕШ</h2>
-            <div class="card-flip">
-                <span id="tod-victim" class="victim-name">???</span>
-                <span id="tod-task">Жми кнопку снизу!</span>
-            </div>
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <button class="btn" style="background: var(--electric-blue); color: black; flex: 1;" onclick="nextTOD('truth')">Правда</button>
-                <button class="btn" style="background: var(--warning-red); flex: 1;" onclick="nextTOD('dare')">ДЕЙСТВИЕ</button>
-            </div>
-        </div>
-
-        <!-- TIC TAC TOE -->
-        <div id="screen-ttt" class="screen">
-            <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
-            <h2>Бой насмерть</h2>
-            <div class="versus" id="ttt-versus"></div>
-            <div class="ttt-board" id="ttt-grid"></div>
-            <div id="ttt-msg" style="font-size: 1.5rem; margin-top: 10px; min-height: 30px;"></div>
-            <button class="btn" style="margin-top:10px;" onclick="initTTT()">Реванш</button>
-        </div>
-
-        <!-- RPS -->
-        <div id="screen-rps" class="screen">
-            <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
-            <h2>ЦУ-Е-ФА</h2>
-            <p id="rps-player-name" style="color: var(--electric-blue); font-size: 1.5rem;">Твой ход</p>
-            <div class="rps-arena">
-                <div class="rps-choice" onclick="playRPS('rock')">🗿</div>
-                <div class="rps-choice" onclick="playRPS('paper')">🧻</div>
-                <div class="rps-choice" onclick="playRPS('scissors')">✂️</div>
-            </div>
-            <div class="winner-text" id="rps-result">Выбирай мудро!</div>
-        </div>
-
-    </div>
-
-<script>
-    let players = [];
-    
-    // --- SETUP ---
-    function handleEnter(e) { if(e.key === 'Enter') addPlayer(); }
-
-    function addPlayer() {
-        const input = document.getElementById('playerName');
-        const name = input.value.trim();
-        if (name) {
-            if(players.includes(name)) {
-                alert("Такой уже есть! Придумай кликуху.");
-                return;
-            }
-            players.push(name);
-            renderPlayers();
-            input.value = '';
-            input.focus();
-        }
-    }
-
-    function renderPlayers() {
-        const list = document.getElementById('playersDisplay');
-        list.innerHTML = players.map(p => 
-            `<span class="player-tag" style="--rot: ${Math.random()*10-5}deg">${p}</span>`
-        ).join('');
-    }
-
-    function startGameParams() {
-        if (players.length < 2) {
-            alert("Эй! Нужно минимум 2 человека для вечеринки!");
-            return;
-        }
-        showScreen('screen-menu');
-    }
-
-    function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
-
-    function getRandomPlayer() {
-        return players[Math.floor(Math.random() * players.length)];
-    }
-
-    // --- TRUTH OR DARE (EXPANDED) ---
-    const tasks = {
-        truth: [
-            "Кто из присутствующих бесит тебя больше всего?",
-            "Какое самое тупое сообщение ты отправлял?",
-            "Когда последний раз ты не мылся 2 дня?",
-            "Покажи последние 3 фото в галерее.",
-            "В кого ты был тайно влюблен?",
-            "Что ты своровал в магазине?",
-            "Назови человека в комнате, с кем бы переспал.",
-            "Какую самую дикую ложь ты говорил родителям?",
-            "Покажи историю поиска в браузере.",
-            "Расскажи о самом позорном сексе (или свидании).",
-            "Оцени внешность игрока справа от 1 до 10.",
-            "Ты когда-нибудь писал в бассейн во взрослом возрасте?"
-        ],
-        dare: [
-            "Изобрази тверк на 10 секунд.",
-            "Дай любому игроку шлепнуть тебя.",
-            "Позвони бывшему/бывшей и промяукай.",
-            "Выпей стакан воды без рук.",
-            "Оближи локоть соседа.",
-            "Сделай массаж ног игроку справа.",
-            "Пусть другой игрок напишет статус в твоей соцсети.",
-            "Сиди на коленях у любого игрока 2 круга.",
-            "Съешь ложку горчицы/острого соуса (если есть).",
-            "Изображай оргазм глядя в глаза соседу.",
-            "Дай понюхать свои подмышки соседу слева.",
-            "Обменяйся одеждой (футболкой) с игроком напротив."
-        ]
-    };
-
-    function initTOD() {
-        showScreen('screen-tod');
-        document.getElementById('tod-victim').innerText = "???";
-        document.getElementById('tod-task').innerText = "Готовьтесь...";
-    }
-
-    function nextTOD(type) {
-        const list = tasks[type];
-        const task = list[Math.floor(Math.random() * list.length)];
-        
-        const victimEl = document.getElementById('tod-victim');
-        const taskEl = document.getElementById('tod-task');
-        
-        // Animation
-        let count = 0;
-        const interval = setInterval(() => {
-            victimEl.innerText = players[Math.floor(Math.random() * players.length)];
-            count++;
-            if(count > 10) {
-                clearInterval(interval);
-                // Ensure random victim works well
-                const finalVictim = getRandomPlayer();
-                victimEl.innerText = finalVictim;
-                taskEl.innerText = task;
-                victimEl.style.color = type === 'truth' ? 'var(--electric-blue)' : 'var(--warning-red)';
-            }
-        }, 50);
-    }
-
-    // --- TIC TAC TOE ---
-    let tttBoard = [];
-    let tttActive = false;
-    let tttCurrent = 'X';
-    let p1, p2;
-
-    function initTTT() {
-        showScreen('screen-ttt');
-        let shuffled = [...players].sort(() => 0.5 - Math.random());
-        p1 = shuffled[0];
-        p2 = shuffled[1];
-        
-        document.getElementById('ttt-versus').innerHTML = 
-            `<span style="color:var(--hot-pink)">${p1}</span> VS <span style="color:var(--electric-blue)">${p2}</span>`;
-        
-        tttBoard = Array(9).fill(null);
-        tttActive = true;
-        tttCurrent = 'X';
-        document.getElementById('ttt-msg').innerText = '';
-        renderTTT();
-    }
-
-    function renderTTT() {
-        const grid = document.getElementById('ttt-grid');
-        grid.innerHTML = '';
-        tttBoard.forEach((cell, i) => {
-            const div = document.createElement('div');
-            div.className = `cell ${cell || ''}`;
-            div.innerText = cell || '';
-            div.onclick = () => clickTTT(i);
-            grid.appendChild(div);
-        });
-    }
-
-    function clickTTT(i) {
-        if (!tttActive || tttBoard[i]) return;
-        tttBoard[i] = tttCurrent;
-        renderTTT();
-        
-        if (checkWinTTT()) {
-            const winner = tttCurrent === 'X' ? p1 : p2;
-            document.getElementById('ttt-msg').innerHTML = `<span style="color:var(--acid-green)">👑 ${winner} ПОБЕДИЛ!</span>`;
-            document.getElementById('ttt-msg').style.animation = "glitch 1s infinite";
-            tttActive = false;
-            return;
-        }
-        if (!tttBoard.includes(null)) {
-            document.getElementById('ttt-msg').innerText = "НИЧЬЯ ДЛЯ СЛАБАКОВ";
-            tttActive = false;
-            return;
-        }
-        tttCurrent = tttCurrent === 'X' ? 'O' : 'X';
-    }
-
-    function checkWinTTT() {
-        const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-        return wins.some(c => tttBoard[c[0]] && tttBoard[c[0]] === tttBoard[c[1]] && tttBoard[c[0]] === tttBoard[c[2]]);
-    }
-
-    // --- RPS (Party Mode) ---
-    function initRPS() {
-        showScreen('screen-rps');
-        document.getElementById('rps-player-name').innerText = getRandomPlayer() + ", твой ход!";
-        document.getElementById('rps-result').innerText = "";
-    }
-
-    function playRPS(choice) {
-        const bots = ['rock', 'paper', 'scissors'];
-        const botChoice = bots[Math.floor(Math.random() * 3)];
-        const resDiv = document.getElementById('rps-result');
-        
-        let msg = "";
-        if (choice === botChoice) {
-            msg = "НИЧЬЯ! ПЕЙТЕ ОБА!";
-            resDiv.style.color = "white";
-        }
-        else if (
-            (choice === 'rock' && botChoice === 'scissors') ||
-            (choice === 'paper' && botChoice === 'rock') ||
-            (choice === 'scissors' && botChoice === 'paper')
-        ) {
-            msg = "КРАСАВА! ТЫ ВЫЖИЛ!";
-            resDiv.style.color = "var(--acid-green)";
-        } else {
-            msg = "ТЫ ПРОИГРАЛ! ПЕЙ ШТРАФНУЮ!";
-            resDiv.style.color = "var(--warning-red)";
-        }
-        
-        resDiv.innerHTML = `Комп: ${botChoice === 'rock'?'🗿':(botChoice==='paper'?'🧻':'✂️')}<br>${msg}`;
-        
-        // Блокируем нажатия на пару секунд
-        const buttons = document.querySelectorAll('.rps-choice');
-        buttons.forEach(b => b.style.pointerEvents = 'none');
-
-        setTimeout(() => {
-            document.getElementById('rps-player-name').innerText = getRandomPlayer() + ", теперь ты!";
-            buttons.forEach(b => b.style.pointerEvents = 'auto');
-            resDiv.innerText = "Готов?";
-            resDiv.style.color = "var(--warning-red)";
         }, 2500);
     }
-
 </script>
 </body>
 </html>

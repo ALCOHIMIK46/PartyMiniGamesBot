@@ -2,12 +2,9 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <!-- Важно: запрещаем масштабирование для мобилок -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TRASH PARTY T-APP</title>
-    <!-- Подключаем скрипт Telegram WebApp -->
+    <title>TRASH PARTY: PROJECT X</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Rubik+Glitch&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -16,51 +13,33 @@
             --electric-blue: #00ffff;
             --void-black: #111;
             --warning-red: #ff3333;
+            --party-purple: #9d00ff; /* Новый цвет для вечеринки */
         }
 
-        /* Убираем выделение текста и подсветку тапов */
-        * { 
-            box-sizing: border-box; 
-            user-select: none; 
-            -webkit-tap-highlight-color: transparent; 
-        }
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
 
         body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             background-color: var(--void-black);
-            /* Фон подстраиваем под тему, но оставляем паттерн */
             background-image: repeating-linear-gradient(45deg, #050505 0px, #050505 20px, #111 20px, #111 40px);
             color: var(--acid-green);
             font-family: 'Bangers', cursive;
-            /* Блокируем скролл всей страницы (важно для Telegram) */
-            overflow: hidden; 
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            overflow: hidden; height: 100vh; width: 100vw;
+            display: flex; align-items: center; justify-content: center;
         }
 
         .container {
-            width: 100%;
-            height: 100%;
-            max-width: 600px;
-            background: rgba(0, 0, 0, 0.90);
-            padding: 15px;
-            position: relative;
+            width: 100%; height: 100%; max-width: 600px;
+            background: rgba(0, 0, 0, 0.95);
+            padding: 15px; position: relative;
             text-align: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            /* Добавляем прокрутку внутри контейнера, если контент не влезает */
+            display: flex; flex-direction: column; justify-content: center;
             overflow-y: auto; 
         }
 
         h1, h2 {
             font-family: 'Rubik Glitch', cursive;
-            font-size: 2.2rem;
-            margin: 10px 0;
+            font-size: 2.2rem; margin: 10px 0;
             color: var(--hot-pink);
             text-shadow: 2px 2px 0px var(--acid-green);
             animation: glitch 3s infinite;
@@ -75,131 +54,80 @@
             100% { text-shadow: 2px 2px 0px var(--acid-green); }
         }
 
-        /* UI Elements */
         .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
-
-        input {
-            flex: 1;
-            background: #000;
-            border: 2px solid var(--acid-green);
-            color: white;
-            font-family: 'Bangers', cursive;
-            font-size: 1.2rem;
-            padding: 10px;
-            outline: none;
-            border-radius: 8px; /* Скругление для мобилок */
-        }
+        input { flex: 1; background: #000; border: 2px solid var(--acid-green); color: white; font-family: 'Bangers', cursive; font-size: 1.2rem; padding: 10px; outline: none; border-radius: 8px; }
 
         .btn {
-            background: var(--hot-pink);
-            color: white;
-            border: none;
-            padding: 15px; /* Чуть больше для пальца */
-            font-family: 'Bangers', cursive;
-            font-size: 1.4rem;
-            cursor: pointer;
-            box-shadow: 4px 4px 0px var(--electric-blue);
-            text-transform: uppercase;
-            touch-action: manipulation;
-            width: 100%;
-            margin-bottom: 15px;
-            position: relative;
-            border-radius: 8px;
+            background: var(--hot-pink); color: white; border: none;
+            padding: 15px; font-family: 'Bangers', cursive; font-size: 1.4rem;
+            cursor: pointer; box-shadow: 4px 4px 0px var(--electric-blue);
+            text-transform: uppercase; width: 100%; margin-bottom: 15px;
+            position: relative; border-radius: 8px;
         }
-
         .btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px var(--electric-blue); }
         
-        /* Кнопка назад - фиксированная */
-        .btn-back { 
-            width: auto; 
-            position: absolute; 
-            top: 10px; 
-            left: 10px; 
-            font-size: 1rem; 
-            padding: 8px 15px; 
-            z-index: 100; 
-            transform: rotate(-2deg);
-        }
+        .btn-back { width: auto; position: absolute; top: 10px; left: 10px; font-size: 1rem; padding: 8px 15px; z-index: 100; transform: rotate(-2deg); }
 
         .player-list { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 20px; }
         .player-tag { background: var(--electric-blue); color: #000; padding: 5px 10px; font-size: 1.1rem; border-radius: 5px; transform: rotate(var(--rot)); }
 
-        /* Screens logic */
         .screen { display: none; height: 100%; flex-direction: column; justify-content: center; }
         .screen.active { display: flex; animation: fadeUp 0.3s ease-out; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- GAME SPECIFIC STYLES --- */
-        .card-flip {
-            background: #111;
-            color: white;
-            padding: 20px;
-            font-size: 1.5rem;
-            border: 2px dashed var(--acid-green);
-            margin: 10px 0;
-            flex-grow: 1;
-            max-height: 40vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            border-radius: 10px;
-        }
-        .victim-name { color: var(--hot-pink); font-size: 2rem; margin-bottom: 10px; text-shadow: 2px 2px 0 #000; }
+        /* Roulette Styles */
+        .cylinder { width: 140px; height: 140px; border-radius: 50%; border: 8px dashed var(--electric-blue); margin: 20px auto; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1); }
 
-        .cylinder {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            border: 8px dashed var(--electric-blue);
-            margin: 20px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3.5rem;
-            transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
-        }
-        
-        .click-area {
-            width: 180px;
-            height: 180px;
-            background: var(--warning-red);
-            border-radius: 50%;
-            margin: 10px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            border: 5px solid white;
-            box-shadow: 0 0 15px var(--warning-red);
-            cursor: pointer;
-        }
+        /* Clicker Styles */
+        .click-area { width: 180px; height: 180px; background: var(--warning-red); border-radius: 50%; margin: 10px auto; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; border: 5px solid white; box-shadow: 0 0 15px var(--warning-red); cursor: pointer; }
         .click-area:active { transform: scale(0.95); }
+
+        /* --- PARTY MODE STYLES --- */
+        .party-box {
+            border: 2px solid var(--party-purple);
+            background: #1a0022;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: left;
+            box-shadow: 5px 5px 0px #440055;
+            position: relative;
+        }
+        .party-hero { color: var(--party-purple); font-size: 1.5rem; margin-bottom: 10px; display: block; text-transform: uppercase; border-bottom: 1px dashed #550066; padding-bottom: 5px;}
+        .party-text { font-size: 1.2rem; color: white; margin-bottom: 10px; line-height: 1.3; }
+        
+        #party-choices { display: flex; flex-direction: column; gap: 10px; }
+        .party-btn-opt { background: #333; font-size: 1.1rem; border: 1px solid white; margin-bottom: 0; padding: 12px; white-space: normal; line-height: 1.1; }
+        
+        .party-result-box {
+            background: #000; border: 2px dashed var(--acid-green); padding: 15px; margin-top: 15px;
+            display: none; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .task-header { color: var(--warning-red); font-size: 1.4rem; margin: 10px 0 5px 0; text-decoration: underline; }
+        .task-text { color: white; font-size: 1.3rem; line-height: 1.2; }
+        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
     </style>
 </head>
 <body>
 
     <div class="container">
-        
-        <!-- 1. MENU SCREEN -->
+        <!-- MENU -->
         <div id="screen-menu" class="screen active">
-            <h1>TRASH PARTY 4.0</h1>
-            <p style="font-size: 0.9rem; color: #777">Telegram Edition</p>
-            <h2>ВЫБЕРИ ИГРУ</h2>
+            <h1>TRASH PARTY 7.0</h1>
+            <p style="font-size: 0.9rem; color: #777">Alko-Dvizh Edition</p>
             <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px; width: 100%;">
-                <button class="btn" onclick="selectGame('tod')" style="background: var(--hot-pink)">Правда / Действие</button>
+                <button class="btn" onclick="selectGame('party')" style="background: var(--party-purple); color: white; border: 2px solid white;">🍻 АЛКО-ДВИЖ (ВПИСКА)</button>
                 <button class="btn" onclick="selectGame('roulette')" style="background: var(--warning-red)">Русская Рулетка 🔫</button>
                 <button class="btn" onclick="selectGame('clicker')" style="background: var(--electric-blue); color: black;">Спид-Кликер ⚡</button>
                 <button class="btn" onclick="selectGame('rps')" style="background: var(--acid-green); color: black;">Камень Ножницы</button>
             </div>
         </div>
 
-        <!-- 2. SETUP SCREEN -->
+        <!-- SETUP -->
         <div id="screen-setup" class="screen">
             <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
-            <h2>КТО ИГРАЕТ?</h2>
-            <p>Впиши жертв (мин. 2)</p>
+            <h2>КТО ТУСИТ?</h2>
             <div class="input-group">
                 <input type="text" id="playerName" placeholder="Имя..." onkeypress="handleEnter(event)" autocomplete="off">
                 <button class="btn" style="width: auto;" onclick="addPlayer()">+</button>
@@ -208,23 +136,7 @@
             <button class="btn" style="background: var(--acid-green); color: black; margin-top: auto;" onclick="launchSelectedGame()">ПОГНАЛИ!</button>
         </div>
 
-        <!-- 3. GAME SCREENS -->
-        
-        <!-- TRUTH OR DARE -->
-        <div id="screen-tod" class="screen">
-            <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
-            <h2>P / D</h2>
-            <div class="card-flip">
-                <span id="tod-victim" class="victim-name">???</span>
-                <span id="tod-task" style="font-size: 1.2rem; line-height: 1.2;">Жми кнопку...</span>
-            </div>
-            <div style="display: flex; gap: 10px; width: 100%;">
-                <button class="btn" style="background: var(--electric-blue); color: black;" onclick="nextTOD('truth')">Правда</button>
-                <button class="btn" style="background: var(--warning-red)" onclick="nextTOD('dare')">Действие</button>
-            </div>
-        </div>
-
-        <!-- RUSSIAN ROULETTE -->
+        <!-- ROULETTE -->
         <div id="screen-roulette" class="screen">
             <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
             <h2>РУЛЕТКА</h2>
@@ -235,7 +147,7 @@
             <button class="btn" id="reset-roulette-btn" style="display:none; background: var(--electric-blue); color:black" onclick="initRoulette()">ЗАРЯДИТЬ СНОВА</button>
         </div>
 
-        <!-- SPEED CLICKER -->
+        <!-- CLICKER -->
         <div id="screen-clicker" class="screen">
             <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
             <h2>КЛИКЕР</h2>
@@ -247,6 +159,27 @@
             <div class="click-area" id="click-btn" onclick="countClick()" style="pointer-events: none; opacity: 0.5;">ЖМИ!</div>
             <button class="btn" id="start-clicker-btn" onclick="startClickerRun()">СТАРТ</button>
             <p id="clicker-record" style="font-size: 1rem; margin-top: 10px; color: #888;">Рекорд сессии: 0</p>
+        </div>
+
+        <!-- PARTY QUEST (ALKO-DVIZH) -->
+        <div id="screen-party" class="screen">
+            <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
+            <h2 style="color: var(--party-purple); text-shadow: 2px 2px 0 #000;">🍻 ВПИСКА</h2>
+            <div class="party-box">
+                <span id="party-hero" class="party-hero">Герой: ???</span>
+                <p id="party-scenario-text" class="party-text">Загрузка...</p>
+            </div>
+            <div id="party-choices">
+                <button id="party-choice-1" class="btn party-btn-opt" onclick="choosePartyPath(0)">1</button>
+                <button id="party-choice-2" class="btn party-btn-opt" onclick="choosePartyPath(1)">2</button>
+                <button id="party-choice-3" class="btn party-btn-opt" onclick="choosePartyPath(2)">3</button>
+            </div>
+            <div id="party-result" class="party-result-box">
+                <p id="party-outcome-text" style="color: var(--party-purple); font-size: 1.1rem;">Итог...</p>
+                <div class="task-header">НАКАЗАНИЕ:</div>
+                <p id="party-real-task" class="task-text">...</p>
+                <button class="btn" style="background: var(--acid-green); color: black; margin-top: 15px;" onclick="nextPartyTurn()">ДАЛЬШЕ</button>
+            </div>
         </div>
 
         <!-- RPS -->
@@ -261,246 +194,219 @@
             </div>
             <div id="rps-result" style="font-size: 1.5rem; color: var(--warning-red); min-height: 50px;"></div>
         </div>
-
     </div>
 
 <script>
-    // --- TELEGRAM INITIALIZATION ---
     const tg = window.Telegram.WebApp;
-    
-    // Сообщаем телеграму, что мы готовы и расширяем на весь экран
-    tg.ready();
-    tg.expand();
-    
-    // Настраиваем цвета шапки телеграма под наш дизайн
-    tg.setHeaderColor('#111111'); 
-    tg.setBackgroundColor('#111111');
+    tg.ready(); tg.expand();
+    tg.setHeaderColor('#111111'); tg.setBackgroundColor('#111111');
 
-    // Helper for Native Alerts
-    function tgAlert(msg) {
-        if(tg.showAlert) tg.showAlert(msg);
-        else alert(msg);
+    function tgAlert(msg) { if(tg.showAlert) tg.showAlert(msg); else alert(msg); }
+    function haptic(type) { if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred(type); }
+
+    // --- ALKO-DVIZH SCENARIOS ---
+    const partyScenarios = [
+    { 
+        t: "🎵 ВКЛЮЧИЛАСЬ БУЗОВА! ТВОЙ ХОД, ЗВЕРЬ!", 
+        c1: "УСТРОИТЬ СТРИПТИЗ НА ШВАБРЕ", 
+        c2: "ВЫЖЕЧЬ КОЛОНКУ ВЗГЛЯДОМ", 
+        c3: "ПРЕТВОРИТЬСЯ ЕЁ ФАНАТОМ", 
+        r1: {x: "Швабра сломалась. Ты одинокий волк.", a: "Станцуй стриптиз со стулом."}, 
+        r2: {x: "Колонка выжила. Ты не дракон.", a: "ПРОКОНФЕССЬ: когда последний раз плакал(а) от музыки?"}, 
+        r3: {x: "Все поверили. Тебе стыдно.", a: "Спой хит Бузовой с серьезным лицом."} 
+    },
+    { 
+        t: "🍷 ЗАКОНЧИЛАСЬ ЗАПИВКА. ОСТАЛАСЬ ТОЛЬКО ВОДКА И ТВОЯ СМЕКАЛКА", 
+        c1: "ЗАПИВАТЬ СОБСТВЕННЫМИ СЛЕЗАМИ", 
+        c2: "ВЫПИТЬ ЧИСТУЮ КАК МУЖЫК", 
+        c3: "СДЕЛАТЬ ЗАПИВКУ ИЗ ЦВЕТОЧНОГО ГОРШКА", 
+        r1: {x: "Слез не хватило. Ты не плакса.", a: "РАССКАЖИ: какая самая дурацкая причина, по которой ты плакал(а)?"}, 
+        r2: {x: "Горло горит. Ты огнедышащий.", a: "Выпей и не морщись. Если морщился - еще стакан."}, 
+        r3: {x: "Цветок умер. Ты убийца.", a: "ПОКАЖИ, как ты представляешь свою смерть от алкоголя."} 
+    },
+    { 
+        t: "📱 НАШЕЛ РАЗБЛОКИРОВАННЫЙ ТЕЛЕФОН. ВРЕМЯ ХАОСА!", 
+        c1: "НАПИСАТЬ БЫВШЕМУ 'Я БЕРЕМЕН(НА) ТВОИМ КОТОМ'", 
+        c2: "ЗАПИСАТЬ ГОЛОСОВОЕ С ПОРНОСТОНАМИ", 
+        c3: "ЗАКАЗАТЬ 50 КИЛОГРАММ КАРТОШКИ", 
+        r1: {x: "Бывший в панике. Кот в опасности.", a: "РАССКАЖИ: самая дурацкая ложь, которую тебе удалось провернуть?"}, 
+        r2: {x: "Владелец телефона теперь звезда OnlyFans.", a: "Изобрази оргазм от вида стула."}, 
+        r3: {x: "Картошка едет. Готовь деньги.", a: "Изобрази картофелину в разных стадиях готовки."} 
+    },
+    { 
+        t: "🚨 ЗВОНОК В ДВЕРЬ! ЭТО МЕНТЫ! ПАНИКА!", 
+        c1: "ПРИТВОРИТЬСЯ ИНОПЛАНЕТЯНИНОМ", 
+        c2: "СДАТЬ ВСЕХ ДРУЗЕЙ", 
+        c3: "СПРЯТАТЬСЯ В ХОЛОДИЛЬНИКЕ", 
+        r1: {x: "Менты вызвали скорую. Твой план сработал.", a: "ПОКАЖИ, как по-твоему выглядят инопланетяне."}, 
+        r2: {x: "Друзья в шоке. Ты стукач.", a: "РАССКАЖИ: за что тебя могли бы посадить в твоей жизни?"}, 
+        r3: {x: "Холодильник заперли. Ты еда.", a: "Просиди в темном углу 3 минуты."} 
+    },
+    { 
+        t: "💤 СОСЕД УСНУЛ С ОТКРЫТЫМ РТОМ. ИДЕАЛЬНЫЙ МОМЕНТ!", 
+        c1: "УСТРОИТЬ СЕАНС ГИПНОЗА", 
+        c2: "ПОЛОЖИТЬ В РОТ ЧИПСЫ 'ПЕРЕЦ'", 
+        c3: "СДЕЛАТЬ СЕЛФИ В СТИЛЕ 'СПЯЩАЯ КРАСАВИЦА'", 
+        r1: {x: "Гипноз не сработал. Ты не гипнотизер.", a: "РАССКАЖИ: в кого бы ты хотел(а) перевоплотиться?"}, 
+        r2: {x: "Сосед проснулся с криком. Успех!", a: "Изобрази чихание от перца."}, 
+        r3: {x: "Фото в инсте. Лайков больше, чем у тебя.", a: "ПОЗИРУЙ как супермодель с салфеткой."} 
+    },
+    { 
+        t: "👻 ВЫКЛЮЧИЛИ СВЕТ. ТЕМНОТА - ТВОЙ ДРУГ!", 
+        c1: "НАЧАТЬ РАССКАЗЫВАТЬ СТРАШИЛКИ ПРО БЫВШИХ", 
+        c2: "ПРЕТВОРИТЬСЯ ПРИЗРАКОМ", 
+        c3: "ПОПЫТАТЬСЯ ПОЦЕЛОВАТЬ СТЕНУ", 
+        r1: {x: "Все испугались. Ты мастер ужасов.", a: "РАССКАЖИ: самая жуткая ситуация с твоими бывшими?"}, 
+        r2: {x: "Кто-то обоссался. Отличная работа!", a: "Походи как призрак с выпученными глазами."}, 
+        r3: {x: "Стена не ответила взаимностью. Грусно.", a: "ПОЦЕЛУЙ самого некрасивого предмета в комнате."} 
+    },
+    { 
+        t: "🚽 УРОНИЛ АЙФОН В УНИТАЗ. КАТАСТРОФА!", 
+        c1: "ДОСТАТЬ РУКОЙ БЕЗ РАЗДУМИЙ", 
+        c2: "ПОПРОСИТЬ ПОМОЩИ У SIRI", 
+        c3: "СМЫТЬ И СКАЗАТЬ 'ОНО ТОГО СТОИЛО'", 
+        r1: {x: "Рука в дерьме. Зато телефон спасен.", a: "РАССКАЖИ: самая унизительная ситуация в твоей жизни?"}, 
+        r2: {x: "Siri послала тебя. Искусственный интеллект победил.", a: "Поговори с любым предметом как с Siri."}, 
+        r3: {x: "Телефон уплыл. Ты философ.", a: "Произнеси речь о бренности бытия."} 
+    },
+    { 
+        t: "💋 ИГРА В БУТЫЛОЧКУ. ВЫПАЛ САМЫЙ СТРАШНЫЙ ИГРОК!", 
+        c1: "ЦЕЛОВАТЬСЯ С ОТВРАЩЕНИЕМ НА ЛИЦЕ", 
+        c2: "СДЕЛАТЬ ВИД ЧТО ТЕБЯ ВЫРВАЛО", 
+        c3: "ПРЕДЛОЖИТЬ ГРУППОВУЮ ПОЦЕЛУЙНУЮ", 
+        r1: {x: "Поцелуй был как у двух рыб. Неловко.", a: "ПОКАЖИ свой самый страстный поцелуй с воздухом."}, 
+        r2: {x: "Все поверили. Тебе дали пропуск.", a: "РАССКАЖИ: самый неловкий поцелуй в твоей жизни?"}, 
+        r3: {x: "Все отказались. Ты одинокий волк.", a: "Поцелуй себя в зеркале со страстью."} 
+    },
+    { 
+        t: "🍕 КУРЬЕР ПРИВЕЗ ПИЦЦУ И ОН БОЖЕСТВЕННО КРАСИВ!", 
+        c1: "ПРЕДЛОЖИТЬ РАСПЛАТИТЬСЯ ЛЮБОВЬЮ", 
+        c2: "ПРИГЛАСИТЬ ЕГО В КЛУБ 'ПИЦЦА-ЛЮБИТЕЛИ'", 
+        c3: "УКРАСТЬ ЕГО КУРЬЕРСКУЮ СУМКУ", 
+        r1: {x: "Курьер сбежал. Ты слишком страстный.", a: "РАССКАЖИ: самая дурацкая влюбленность в твоей жизни?"}, 
+        r2: {x: "Он согласился! У вас свидание!", a: "ПОКАЖИ, как ты флиртуешь с пиццей."}, 
+        r3: {x: "Теперь у тебя 10 пицц. Поздравляю!", a: "Съешь кусок пиццы как эротичный завтрак."} 
+    },
+    { 
+        t: "😴 КТО-ТО УСНУЛ В ВАННОЙ. ВРЕМЯ ДЛЯ ТВОРЧЕСТВА!", 
+        c1: "СДЕЛАТЬ ЕМУ МАКИЯЖ А-LA ПАНДА", 
+        c2: "ПОЛОЖИТЬ В РУКУ МЫЛО С ЗАПИСКОЙ 'ПОМОЙСЯ'", 
+        c3: "УКРЫТЬ ЕГО ТУАЛЕТНОЙ БУМАГОЙ КАК СНЕГОМ", 
+        r1: {x: "Проснулся и испугался своего отражения. Успех!", a: "ПОКАЖИ, как панда ест, спит и плачет."}, 
+        r2: {x: "Проснулся и пошел мыться. Ты воспитатель.", a: "РАССКАЖИ: самая дурацкая привычка в душе?"}, 
+        r3: {x: "Теперь он снеговик. Красота!", a: "Изобрази таяние снеговика от водки."} 
+    },
+    { 
+        t: "🚬 КОНЧИЛИСЬ СИГАРЕТЫ! ЛОМКА!", 
+        c1: "КУРИТЬ СУШЕНУЮ ПЕТРУШКУ", 
+        c2: "ДЫШАТЬ ВОЗДУХОМ ИЗ ПЫЛЕСОСА", 
+        c3: "СДЕЛАТЬ КАЛЬЯН ИЗ БАНКИ ОГУРЦОВ", 
+        r1: {x: "Вкус как у бабушки в супе. Странно.", a: "ПРОКОНФЕССЬ: самая дурацкая вещь, которую ты курил(а)?"}, 
+        r2: {x: "Пылесос сломался. Ты монстр.", a: "Изобрази работу пылесоса с звуками."}, 
+        r3: {x: "Кальян пахнет маринадом. Отвратительно.", a: "Выпей рассол из-под огурцов как шот."} 
+    },
+    { 
+        t: "👖 ТВОИ ШТАНЫ ПОРВАЛИСЬ НА ЖОПЕ! КОШМАР!", 
+        c1: "СДЕЛАТЬ ИЗ ЭТОГО МОДНЫЙ ТРЕНД", 
+        c2: "ПРИКЛЕИТЬ СКОТЧЕМ И СКАЗАТЬ 'ТАК И НАДО'", 
+        c3: "СНЯТЬ И ТАНЦЕВАТЬ В ТРУСАХ", 
+        r1: {x: "Никто не оценил твой дизайн. Безвкусница.", a: "ПРОДЕМОНСТРИРУЙ свою лучшую позу как модель."}, 
+        r2: {x: "Скотч отклеился. Жопа на свободе.", a: "РАССКАЖИ: самая неловкая ситуация с твоей одеждой?"}, 
+        r3: {x: "Танцы удались! Ты звезда стриптиза.", a: "Станцуй канкан в трусах/юбке."} 
+    },
+    { 
+        t: "👵 ПРИШЛА МАМА ХОЗЯИНА КВАРТИРЫ! УЖАС!", 
+        c1: "ПРЕДСТАВИТЬСЯ ДЕКОРАТОРОМ", 
+        c2: "СКАЗАТЬ 'МЫ ЗДЕСЬ ЗАНИМАЕМСЯ ЙОГОЙ'", 
+        c3: "СПРЯТАТЬСЯ В ШКАФУ С БУТЫЛКОЙ", 
+        r1: {x: "Мама поверила. Ты теперь дизайнер.", a: "ПОКАЖИ, как ты представляешь йогу для алкоголиков."}, 
+        r2: {x: "Мама захотела присоединиться. Неловко.", a: "РАССКАЖИ: самая дурацкая ложь родителям?"}, 
+        r3: {x: "Шкаф заговорил. Мама вызвала экзорциста.", a: "Просиди в шкафу/под столом 2 минуты."} 
+    },
+    { 
+        t: "💩 КТО-ТО БЛЕВАНУЛ В КОРИДОРЕ. КТО ВОССТАНОВИТ ПОРЯДОК?", 
+        c1: "СДЕЛАТЬ ИЗ ЭТОГО АРТ-ОБЪЕКТ", 
+        c2: "НАЗВАТЬ ЕГО И ОСТАВИТЬ КАК ТАЛИСМАН", 
+        c3: "ПЕРЕКРОИТЬ КОВЕР ПОД ЭТУ КОМПОЗИЦИЮ", 
+        r1: {x: "Никто не оценил твое искусство. Варвары.", a: "СОЗДАЙ скульптуру из любого предмета."}, 
+        r2: {x: "Талисман приносит удачу! Странно, но факт.", a: "РАССКАЖИ: самая отвратительная вещь, которую ты делал(а)?"}, 
+        r3: {x: "Ковер теперь уникален. Как и твой вкус.", a: "Изобрази блевание артиста балета."} 
+    },
+    { 
+        t: "🎸 ТЕБЕ ДАЛИ ГИТАРУ, А ТЫ ИГРАТЬ НЕ УМЕЕШЬ!", 
+        c1: "ИЗОБРАЗИТЬ РОК-ЗВЕЗДУ С ПРИСТУПОМ", 
+        c2: "РАЗБИТЬ ОБ СЦЕНУ КАК НАСТОЯЩИЙ ПАНК", 
+        c3: "СПЕТЬ ПЕСНЮ ПРО АЛКОГОЛИЗМ", 
+        r1: {x: "Публика в восторге! Ты рок-идол!", a: "СПОЙ песню про водку на мотив детской песенки."}, 
+        r2: {x: "Гитара выжила. Ты слабак.", a: "РАССКАЖИ: о чем бы была твоя рок-баллада?"}, 
+        r3: {x: "Все плачут. Ты затрагиваешь струны души.", a: "Изобрази оркестр из одного человека."} 
     }
-
-    // --- CONTENT (40 Questions & 40 Actions) ---
-    const tasks = {
-        truth: [
-            "Кто из присутствующих бесит тебя больше всего?",
-            "Какое самое тупое сообщение ты отправлял?",
-            "Когда последний раз ты не мылся 2 дня?",
-            "Покажи последние 3 фото в галерее.",
-            "В кого ты был тайно влюблен?",
-            "Что ты своровал в магазине?",
-            "Сколько денег у тебя сейчас на карте?",
-            "Какую самую странную порнуху ты смотрел?",
-            "Кого из этой комнаты ты бы спас первым при зомби-апокалипсисе?",
-            "Расскажи о своей самой позорной пьянке.",
-            "Ты когда-нибудь нюхал свое нижнее белье?",
-            "Какой самый ужасный подарок ты передаривал?",
-            "Чью переписку ты бы хотел прочитать?",
-            "Ты когда-нибудь писал в раковину?",
-            "Какой самый глупый способ, которым ты получил травму?",
-            "Если бы тебе пришлось убить одного человека здесь, кто бы это был?",
-            "Что самое дорогое ты сломал и скрыл это?",
-            "Ты когда-нибудь симулировал болезнь, чтобы не идти на встречу?",
-            "Какое прозвище у тебя было в школе?",
-            "Что ты делаешь, когда остаешься дома один?",
-            "Кто из игроков одевается хуже всех?",
-            "Ты когда-нибудь отправлял нюдсы не тому человеку?",
-            "Чего ты больше всего боишься в постели?",
-            "Ты когда-нибудь врал про свой возраст?",
-            "Назови одну черту характера соседа справа, которую ты ненавидишь.",
-            "Ты когда-нибудь писал в бассейн?",
-            "С кем из бывших ты бы переспал снова?",
-            "Какую часть тела ты бы в себе изменил?",
-            "Ты когда-нибудь крал деньги у родителей?",
-            "Назови самую глупую причину, по которой ты кого-то бросил.",
-            "Ты храпишь во сне?",
-            "Когда ты последний раз плакал и почему?",
-            "Ты ревнуешь своих друзей к другим?",
-            "Твое самое странное 'постыдное удовольствие'?",
-            "Ты веришь в призраков или инопланетян?",
-            "Какую еду ты ненавидишь до тошноты?",
-            "Ты когда-нибудь отправлял сообщение, о котором жалел сразу же?",
-            "Если бы ты был другого пола на один день, что бы сделал первым делом?",
-            "Оцени свою внешность от 1 до 10 честно.",
-            "Какой самый странный сон тебе снился?"
-        ],
-        dare: [
-            "Изобрази тверк на 10 секунд.",
-            "Дай любому игроку шлепнуть тебя.",
-            "Позвони бывшему/бывшей и промяукай.",
-            "Выпей стакан воды без рук.",
-            "Оближи локоть соседа.",
-            "Сделай массаж ног игроку справа.",
-            "Съешь ложку чего угодно из холодильника (выбирают другие).",
-            "Дай свой телефон на 1 минуту другому игроку.",
-            "Стой в планке, пока другие игроки не разрешат встать (макс 1 мин).",
-            "Изобрази оргазм громко.",
-            "Лизни пол.",
-            "Позвони родителям и скажи, что тебя отчислили/уволили.",
-            "Опустоши свои карманы.",
-            "Пусть игрок слева нарисует усы тебе на лице.",
-            "Нюхай носки соседа справа 10 секунд.",
-            "Говори с акцентом следующие 3 раунда.",
-            "Сделай 20 приседаний прямо сейчас.",
-            "Положи лед себе в трусы и жди пока растает.",
-            "Выпей шот чего-нибудь соленого.",
-            "Отправь последнее фото из галереи 5-му контакту в мессенджере.",
-            "Читай рэп про игрока напротив.",
-            "Сними один предмет одежды.",
-            "Поцелуй руку каждому игроку в комнате.",
-            "Изображай обезьяну до следующего хода.",
-            "Выпей стакан воды залпом.",
-            "Изобрази курицу, которая несет яйцо.",
-            "Пусть группа сделает тебе смешную прическу, ходи так 2 раунда.",
-            "Съешь зубчик чеснока или кусок лука.",
-            "Говори шепотом до следующего своего хода.",
-            "Понюхай подмышку соседа слева.",
-            "Сделай мостик (или попытайся).",
-            "Разреши прочитать твое последнее отправленное СМС вслух.",
-            "Изобрази пьяного в стельку человека.",
-            "Танцуй медляк со шваброй или стулом.",
-            "Съешь кусочек лимона вместе с кожурой.",
-            "Позволь накрасить тебе губы (парням тоже).",
-            "Сделай селфи с унитазом и выложи в сторис на 5 минут.",
-            "Расскажи детский стишок, стоя на стуле.",
-            "Засунь палец в ухо соседу и держи 5 секунд.",
-            "Покажи историю браузера за сегодня."
-        ]
-    };
+]
 
     // --- LOGIC ---
     let players = [];
     let selectedGame = null;
+    let currentScenario = null; 
     
     function handleEnter(e) { if(e.key === 'Enter') addPlayer(); }
-
     function addPlayer() {
         const input = document.getElementById('playerName');
         const name = input.value.trim();
         if (name && !players.includes(name)) {
             players.push(name);
             renderPlayers();
-            input.value = '';
-            input.focus();
+            input.value = ''; input.focus();
         }
     }
-
     function renderPlayers() {
-        document.getElementById('playersDisplay').innerHTML = players.map(p => 
-            `<span class="player-tag" style="--rot: ${Math.random()*10-5}deg">${p}</span>`
-        ).join('');
+        document.getElementById('playersDisplay').innerHTML = players.map(p => `<span class="player-tag" style="--rot: ${Math.random()*10-5}deg">${p}</span>`).join('');
     }
-
-    // 1. SELECT GAME
-    function selectGame(gameType) {
-        selectedGame = gameType;
-        showScreen('screen-setup');
-    }
-
-    // 2. LAUNCH
+    function selectGame(gameType) { selectedGame = gameType; showScreen('screen-setup'); }
     function launchSelectedGame() {
-        if (players.length < 2) { 
-            tgAlert("Нужно минимум 2 игрока!"); 
-            return; 
-        }
-        
-        // Route to correct game init
-        if (selectedGame === 'tod') initTOD();
-        else if (selectedGame === 'roulette') initRoulette();
+        if (players.length < 2) { tgAlert("Нужно минимум 2 игрока!"); return; }
+        if (selectedGame === 'roulette') initRoulette();
         else if (selectedGame === 'clicker') initClicker();
         else if (selectedGame === 'rps') initRPS();
+        else if (selectedGame === 'party') initParty(); 
     }
-
     function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     }
     function getRandomPlayer() { return players[Math.floor(Math.random() * players.length)]; }
 
-    // --- TRUTH OR DARE ---
-    function initTOD() {
-        showScreen('screen-tod');
-        document.getElementById('tod-victim').innerText = "???";
-        document.getElementById('tod-task').innerText = "Готовься...";
-    }
-
-    function nextTOD(type) {
-        // Haptic feedback for clicks
-        if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-
-        const list = tasks[type];
-        const task = list[Math.floor(Math.random() * list.length)];
-        const victimEl = document.getElementById('tod-victim');
-        const taskEl = document.getElementById('tod-task');
-        
-        let count = 0;
-        const interval = setInterval(() => {
-            victimEl.innerText = players[Math.floor(Math.random() * players.length)];
-            count++;
-            if(count > 8) {
-                clearInterval(interval);
-                victimEl.innerText = getRandomPlayer();
-                taskEl.innerText = task;
-                victimEl.style.color = type === 'truth' ? 'var(--electric-blue)' : 'var(--warning-red)';
-                // Success haptic
-                if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-            }
-        }, 50);
-    }
-
-    // --- RUSSIAN ROULETTE ---
-    let chambers = 6;
-    let bulletPos = 0;
-    let currentChamber = 0;
-    let roulettePlayerIndex = 0;
-
+    // --- ROULETTE ---
+    let chambers, bulletPos, currentChamber, roulettePlayerIndex;
     function initRoulette() {
         showScreen('screen-roulette');
-        chambers = 6;
-        currentChamber = 0;
-        bulletPos = Math.floor(Math.random() * 6); 
+        chambers = 6; currentChamber = 0; bulletPos = Math.floor(Math.random() * 6); 
         roulettePlayerIndex = Math.floor(Math.random() * players.length);
-        
-        document.getElementById('roulette-msg').innerText = "Барабан прокручен. Удачи.";
+        document.getElementById('roulette-msg').innerText = "Барабан прокручен...";
         document.getElementById('roulette-msg').style.color = "white";
         document.getElementById('cylinder').style.transform = "rotate(0deg)";
         document.getElementById('cylinder').innerText = "💀";
         document.getElementById('fire-btn').style.display = "inline-block";
         document.getElementById('reset-roulette-btn').style.display = "none";
-        document.body.style.backgroundColor = "var(--void-black)"; // reset bg
-        
+        document.body.style.backgroundColor = "var(--void-black)";
         updateRoulettePlayer();
     }
-
-    function updateRoulettePlayer() {
-        document.getElementById('roulette-player').innerText = "Стреляет: " + players[roulettePlayerIndex];
-    }
-
+    function updateRoulettePlayer() { document.getElementById('roulette-player').innerText = "Стреляет: " + players[roulettePlayerIndex]; }
     function fireRoulette() {
-        if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
-
+        haptic('heavy');
         const cyl = document.getElementById('cylinder');
-        const msg = document.getElementById('roulette-msg');
-        
-        // Rotation effect
         cyl.style.transform = `rotate(${360 + (currentChamber * 60)}deg)`;
-
         setTimeout(() => {
             if (currentChamber === bulletPos) {
-                // BANG
-                msg.innerText = "ВЫСТРЕЛ! ТЫ ТРУП! (Пей до дна)";
-                msg.style.color = "var(--warning-red)";
+                document.getElementById('roulette-msg').innerText = "ВЫСТРЕЛ! ПЕЙ ДО ДНА!";
+                document.getElementById('roulette-msg').style.color = "var(--warning-red)";
                 cyl.innerText = "💥";
                 document.body.style.backgroundColor = "#500";
                 document.getElementById('fire-btn').style.display = "none";
                 document.getElementById('reset-roulette-btn').style.display = "inline-block";
-                if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+                haptic('error');
             } else {
-                // CLICK
-                msg.innerText = "ЩЕЛЧОК... Живи пока.";
-                msg.style.color = "var(--acid-green)";
+                document.getElementById('roulette-msg').innerText = "Щелчок... Живи.";
+                document.getElementById('roulette-msg').style.color = "var(--acid-green)";
                 currentChamber++;
                 roulettePlayerIndex = (roulettePlayerIndex + 1) % players.length;
                 updateRoulettePlayer();
@@ -508,94 +414,81 @@
         }, 300);
     }
 
-    // --- SPEED CLICKER ---
-    let clickCount = 0;
-    let clickTime = 10;
-    let clickTimerInt = null;
-    let clickSessionRecord = 0;
-
-    function initClicker() {
-        showScreen('screen-clicker');
-        resetClickerUI();
-    }
-
+    // --- CLICKER ---
+    let clickCount = 0, clickTimerInt = null, clickSessionRecord = 0;
+    function initClicker() { showScreen('screen-clicker'); resetClickerUI(); }
     function resetClickerUI() {
-        document.getElementById('clicker-player').innerText = "След. игрок: " + getRandomPlayer();
+        document.getElementById('clicker-player').innerText = "Готовится: " + getRandomPlayer();
         document.getElementById('click-count').innerText = "0";
         document.getElementById('click-timer').innerText = "10.00";
         const btn = document.getElementById('click-btn');
-        btn.style.pointerEvents = "none";
-        btn.style.opacity = "0.5";
-        btn.innerText = "ЖМИ!";
+        btn.style.pointerEvents = "none"; btn.style.opacity = "0.5"; btn.innerText = "ЖМИ!";
         document.getElementById('start-clicker-btn').style.display = "inline-block";
         clickCount = 0;
-        clickTime = 10;
     }
-
     function startClickerRun() {
         document.getElementById('start-clicker-btn').style.display = "none";
         const btn = document.getElementById('click-btn');
-        btn.innerText = "3...";
-        
-        setTimeout(() => { btn.innerText = "2..."; }, 700);
-        setTimeout(() => { btn.innerText = "1..."; }, 1400);
+        btn.innerText = "3..."; setTimeout(() => { btn.innerText = "2..."; }, 700); setTimeout(() => { btn.innerText = "1..."; }, 1400);
         setTimeout(() => {
-            btn.innerText = "🔥";
-            btn.style.pointerEvents = "auto";
-            btn.style.opacity = "1";
-            btn.style.background = "var(--hot-pink)";
-            if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
-            
+            btn.innerText = "🔥"; btn.style.pointerEvents = "auto"; btn.style.opacity = "1"; btn.style.background = "var(--hot-pink)";
+            haptic('warning');
             const startTime = Date.now();
             clickTimerInt = setInterval(() => {
                 let elapsed = (Date.now() - startTime) / 1000;
                 let left = 10 - elapsed;
-                if (left <= 0) {
-                    endClickerGame();
-                } else {
-                    document.getElementById('click-timer').innerText = left.toFixed(2);
-                }
+                if (left <= 0) endClickerGame(); else document.getElementById('click-timer').innerText = left.toFixed(2);
             }, 50);
         }, 2100);
     }
-
     function countClick() {
         clickCount++;
         document.getElementById('click-count').innerText = clickCount;
-        
-        // Vibration on every 5th click to save battery/feel
-        if(clickCount % 5 === 0 && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-
+        if(clickCount % 5 === 0) haptic('light');
         const btn = document.getElementById('click-btn');
-        btn.style.transform = "scale(0.9)";
-        setTimeout(() => btn.style.transform = "scale(1)", 50);
+        btn.style.transform = "scale(0.9)"; setTimeout(() => btn.style.transform = "scale(1)", 50);
     }
-
     function endClickerGame() {
         clearInterval(clickTimerInt);
         document.getElementById('click-timer').innerText = "0.00";
         const btn = document.getElementById('click-btn');
-        btn.style.pointerEvents = "none";
-        btn.style.opacity = "0.5";
-        btn.style.background = "var(--warning-red)";
-        btn.innerText = "СТОП";
-        
-        let msg = "";
-        if (clickCount > clickSessionRecord) {
-            clickSessionRecord = clickCount;
-            document.getElementById('clicker-record').innerText = "🔥 НОВЫЙ РЕКОРД: " + clickSessionRecord;
-            msg = `МОЩЬ! Твой результат: ${clickCount}. Это новый рекорд!`;
-        } else {
-            msg = `Время вышло! Твой результат: ${clickCount}.`;
-        }
-        
-        if(tg.showPopup) {
-            tg.showPopup({ title: 'Результат', message: msg, buttons: [{type: 'ok'}] });
-        } else {
-            alert(msg);
-        }
-        
+        btn.style.pointerEvents = "none"; btn.style.opacity = "0.5"; btn.style.background = "var(--warning-red)"; btn.innerText = "СТОП";
+        let msg = (clickCount > clickSessionRecord) ? `🔥 НОВЫЙ РЕКОРД: ${clickCount}` : `Результат: ${clickCount}`;
+        if(clickCount > clickSessionRecord) clickSessionRecord = clickCount;
+        document.getElementById('clicker-record').innerText = "Рекорд: " + clickSessionRecord;
+        if(tg.showPopup) tg.showPopup({ title: 'Финиш', message: msg, buttons: [{type: 'ok'}] }); else alert(msg);
         setTimeout(resetClickerUI, 2000);
+    }
+
+    // --- ALKO-DVIZH (PARTY QUEST) ---
+    function initParty() { showScreen('screen-party'); nextPartyTurn(); }
+    function nextPartyTurn() {
+        document.getElementById('party-choices').style.display = "flex";
+        document.getElementById('party-result').style.display = "none";
+        
+        document.getElementById('party-hero').innerText = "Герой: " + getRandomPlayer();
+        
+        currentScenario = partyScenarios[Math.floor(Math.random() * partyScenarios.length)];
+        
+        document.getElementById('party-scenario-text').innerText = currentScenario.t;
+        document.getElementById('party-choice-1').innerText = currentScenario.c1;
+        document.getElementById('party-choice-2').innerText = currentScenario.c2;
+        document.getElementById('party-choice-3').innerText = currentScenario.c3;
+    }
+    function choosePartyPath(idx) {
+        haptic('heavy');
+        document.getElementById('party-choices').style.display = "none";
+        const resBox = document.getElementById('party-result');
+        resBox.style.display = "block";
+        
+        let outcome;
+        if (idx === 0) outcome = currentScenario.r1;
+        else if (idx === 1) outcome = currentScenario.r2;
+        else outcome = currentScenario.r3;
+        
+        document.getElementById('party-outcome-text').innerText = outcome.x;
+        document.getElementById('party-real-task').innerText = outcome.a;
+        haptic('success');
     }
 
     // --- RPS ---
@@ -604,29 +497,17 @@
         document.getElementById('rps-player-name').innerText = getRandomPlayer() + ", твой ход!";
         document.getElementById('rps-result').innerText = "";
     }
-
     function playRPS(choice) {
         const bots = ['rock', 'paper', 'scissors'];
         const botChoice = bots[Math.floor(Math.random() * 3)];
         const resDiv = document.getElementById('rps-result');
         let msg = "";
-        
         if (choice === botChoice) { msg = "НИЧЬЯ! ПЕЙ!"; resDiv.style.color = "white"; }
-        else if (
-            (choice === 'rock' && botChoice === 'scissors') ||
-            (choice === 'paper' && botChoice === 'rock') ||
-            (choice === 'scissors' && botChoice === 'paper')
-        ) { 
-            msg = "ПОБЕДА!"; 
-            resDiv.style.color = "var(--acid-green)"; 
-            if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-        } 
-        else { 
-            msg = "ЛУЗЕР! ПЕЙ!"; 
-            resDiv.style.color = "var(--warning-red)"; 
-            if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+        else if ((choice === 'rock' && botChoice === 'scissors') || (choice === 'paper' && botChoice === 'rock') || (choice === 'scissors' && botChoice === 'paper')) { 
+            msg = "ПОБЕДА!"; resDiv.style.color = "var(--acid-green)"; haptic('success');
+        } else { 
+            msg = "ЛУЗЕР! ПЕЙ!"; resDiv.style.color = "var(--warning-red)"; haptic('error');
         }
-        
         resDiv.innerHTML = `Комп: ${botChoice === 'rock'?'🗿':(botChoice==='paper'?'🧻':'✂️')} <br> ${msg}`;
         setTimeout(() => {
             document.getElementById('rps-player-name').innerText = getRandomPlayer() + ", теперь ты!";

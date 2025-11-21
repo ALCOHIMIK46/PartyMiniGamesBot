@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TRASH PARTY GAMES 2.0</title>
+    <title>TRASH PARTY 4.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Rubik+Glitch&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -20,7 +20,7 @@
             margin: 0;
             padding: 0;
             background-color: var(--void-black);
-            background-image: repeating-linear-gradient(45deg, #111 0px, #111 20px, #222 20px, #222 40px);
+            background-image: repeating-linear-gradient(45deg, #050505 0px, #050505 20px, #111 20px, #111 40px);
             color: var(--acid-green);
             font-family: 'Bangers', cursive;
             overflow-x: hidden;
@@ -30,10 +30,542 @@
             justify-content: center;
         }
 
-        /* Chaos Background Animation */
-        body::before {
-            content: '';
-            position: absolute;
+        .container {
+            width: 95%;
+            max-width: 600px;
+            border: 4px solid var(--electric-blue);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 15px;
+            box-shadow: 8px 8px 0px var(--hot-pink);
+            position: relative;
+            text-align: center;
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        h1, h2 {
+            font-family: 'Rubik Glitch', cursive;
+            font-size: 2.5rem;
+            margin: 10px 0;
+            color: var(--hot-pink);
+            text-shadow: 2px 2px 0px var(--acid-green);
+            animation: glitch 3s infinite;
+            line-height: 1;
+        }
+
+        @keyframes glitch {
+            0% { text-shadow: 2px 2px 0px var(--acid-green); }
+            20% { text-shadow: -2px 2px 0px var(--electric-blue); }
+            40% { text-shadow: -2px -2px 0px var(--warning-red); }
+            60% { text-shadow: 2px -2px 0px var(--hot-pink); }
+            100% { text-shadow: 2px 2px 0px var(--acid-green); }
+        }
+
+        /* INPUTS & UI */
+        .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+
+        input {
+            flex: 1;
+            background: #000;
+            border: 2px solid var(--acid-green);
+            color: white;
+            font-family: 'Bangers', cursive;
+            font-size: 1.2rem;
+            padding: 10px;
+            outline: none;
+            border-radius: 0;
+        }
+
+        .btn {
+            background: var(--hot-pink);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-family: 'Bangers', cursive;
+            font-size: 1.4rem;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px var(--electric-blue);
+            text-transform: uppercase;
+            touch-action: manipulation;
+            width: 100%;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px var(--electric-blue); }
+        .btn-back { width: auto; position: absolute; top: 10px; left: 10px; font-size: 1rem; padding: 5px 10px; z-index: 100; transform: rotate(-2deg);}
+
+        .player-list { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 20px; }
+        .player-tag { background: var(--electric-blue); color: #000; padding: 3px 8px; font-size: 1rem; border: 1px solid #000; transform: rotate(var(--rot)); }
+
+        .screen { display: none; height: 100%; }
+        .screen.active { display: block; animation: fadeUp 0.3s ease-out; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- TRUTH OR DARE --- */
+        .card-flip {
+            background: #111;
+            color: white;
+            padding: 20px;
+            font-size: 1.6rem;
+            border: 3px dashed var(--acid-green);
+            margin: 20px 0;
+            min-height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .victim-name { color: var(--hot-pink); font-size: 2.2rem; margin-bottom: 10px; text-shadow: 2px 2px 0 #000; }
+
+        /* --- RUSSIAN ROULETTE --- */
+        .cylinder {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 10px dashed var(--electric-blue);
+            margin: 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            transition: transform 0.5s;
+        }
+        .roulette-msg { font-size: 1.5rem; min-height: 60px; color: var(--warning-red); }
+
+        /* --- CLICKER --- */
+        .click-area {
+            width: 200px;
+            height: 200px;
+            background: var(--warning-red);
+            border-radius: 50%;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            border: 5px solid white;
+            box-shadow: 0 0 20px var(--warning-red);
+            cursor: pointer;
+            user-select: none;
+        }
+        .click-area:active { transform: scale(0.95); background: #cc0000; }
+        .click-stats { font-size: 2rem; color: var(--electric-blue); margin: 10px 0; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- 1. MENU SCREEN (ТЕПЕРЬ ПЕРВЫЙ) -->
+        <div id="screen-menu" class="screen active">
+            <h1>TRASH PARTY 4.0</h1>
+            <h2>ВЫБЕРИ ИГРУ</h2>
+            <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+                <button class="btn" onclick="selectGame('tod')" style="background: var(--hot-pink)">Правда / Действие</button>
+                <button class="btn" onclick="selectGame('roulette')" style="background: var(--warning-red)">Русская Рулетка 🔫</button>
+                <button class="btn" onclick="selectGame('clicker')" style="background: var(--electric-blue); color: black;">Спид-Кликер ⚡</button>
+                <button class="btn" onclick="selectGame('rps')" style="background: var(--acid-green); color: black;">Камень Ножницы</button>
+            </div>
+        </div>
+
+        <!-- 2. SETUP SCREEN (ТЕПЕРЬ ВТОРОЙ) -->
+        <div id="screen-setup" class="screen">
+            <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
+            <h2>КТО ИГРАЕТ?</h2>
+            <p>Впиши жертв (мин. 2)</p>
+            <div class="input-group">
+                <input type="text" id="playerName" placeholder="Имя..." onkeypress="handleEnter(event)" autocomplete="off">
+                <button class="btn" style="width: auto;" onclick="addPlayer()">OK</button>
+            </div>
+            <div class="player-list" id="playersDisplay"></div>
+            <button class="btn" style="background: var(--acid-green); color: black;" onclick="launchSelectedGame()">ПОГНАЛИ!</button>
+        </div>
+
+        <!-- 3. GAME SCREENS -->
+        
+        <!-- TRUTH OR DARE -->
+        <div id="screen-tod" class="screen">
+            <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
+            <h2>P / D</h2>
+            <div class="card-flip">
+                <span id="tod-victim" class="victim-name">???</span>
+                <span id="tod-task">Жми кнопку...</span>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn" style="background: var(--electric-blue); color: black;" onclick="nextTOD('truth')">Правда</button>
+                <button class="btn" style="background: var(--warning-red)" onclick="nextTOD('dare')">Действие</button>
+            </div>
+        </div>
+
+        <!-- RUSSIAN ROULETTE -->
+        <div id="screen-roulette" class="screen">
+            <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
+            <h2>РУЛЕТКА</h2>
+            <p id="roulette-player" style="font-size: 1.5rem; color: var(--acid-green)">Игрок: ???</p>
+            <div class="cylinder" id="cylinder">💀</div>
+            <div class="roulette-msg" id="roulette-msg">В барабане 1 патрон...</div>
+            <button class="btn" id="fire-btn" style="background: var(--warning-red)" onclick="fireRoulette()">СПУСТИТЬ КУРОК</button>
+            <button class="btn" id="reset-roulette-btn" style="display:none; background: var(--electric-blue); color:black" onclick="initRoulette()">ЗАРЯДИТЬ СНОВА</button>
+        </div>
+
+        <!-- SPEED CLICKER -->
+        <div id="screen-clicker" class="screen">
+            <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
+            <h2>КЛИКЕР</h2>
+            <p id="clicker-player" style="color: var(--hot-pink)">Готовится: ???</p>
+            <div class="click-stats">
+                <span id="click-timer">10.00</span> сек<br>
+                <span id="click-count" style="font-size: 3rem; color: white;">0</span>
+            </div>
+            <div class="click-area" id="click-btn" onclick="countClick()" style="pointer-events: none; opacity: 0.5;">ЖМИ!</div>
+            <button class="btn" id="start-clicker-btn" onclick="startClickerRun()">СТАРТ</button>
+            <p id="clicker-record" style="font-size: 1rem; margin-top: 10px; color: #888;">Рекорд сессии: 0</p>
+        </div>
+
+        <!-- RPS -->
+        <div id="screen-rps" class="screen">
+            <button class="btn btn-back" onclick="showScreen('screen-menu')">Меню</button>
+            <h2>ЦУ-Е-ФА</h2>
+            <p id="rps-player-name" style="color: var(--electric-blue); font-size: 1.2rem;">Твой ход</p>
+            <div style="display: flex; justify-content: space-around; font-size: 3rem; margin: 20px 0;">
+                <div onclick="playRPS('rock')">🗿</div>
+                <div onclick="playRPS('paper')">🧻</div>
+                <div onclick="playRPS('scissors')">✂️</div>
+            </div>
+            <div id="rps-result" style="font-size: 1.5rem; color: var(--warning-red); min-height: 50px;"></div>
+        </div>
+
+    </div>
+
+<script>
+    // --- 40 QUESTIONS & 40 ACTIONS ---
+    const tasks = {
+        truth: [
+            "Кто из присутствующих бесит тебя больше всего?",
+            "Какое самое тупое сообщение ты отправлял?",
+            "Когда последний раз ты не мылся 2 дня?",
+            "Покажи последние 3 фото в галерее.",
+            "В кого ты был тайно влюблен?",
+            "Что ты своровал в магазине?",
+            "Сколько денег у тебя сейчас на карте?",
+            "Какую самую странную порнуху ты смотрел?",
+            "Кого из этой комнаты ты бы спас первым при зомби-апокалипсисе?",
+            "Расскажи о своей самой позорной пьянке.",
+            "Ты когда-нибудь нюхал свое нижнее белье?",
+            "Какой самый ужасный подарок ты передаривал?",
+            "Чью переписку ты бы хотел прочитать?",
+            "Ты когда-нибудь писал в раковину?",
+            "Какой самый глупый способ, которым ты получил травму?",
+            "Если бы тебе пришлось убить одного человека здесь, кто бы это был?",
+            "Что самое дорогое ты сломал и скрыл это?",
+            "Ты когда-нибудь симулировал болезнь, чтобы не идти на встречу?",
+            "Какое прозвище у тебя было в школе?",
+            "Что ты делаешь, когда остаешься дома один?",
+            "Кто из игроков одевается хуже всех?",
+            "Ты когда-нибудь отправлял нюдсы не тому человеку?",
+            "Чего ты больше всего боишься в постели?",
+            "Ты когда-нибудь врал про свой возраст?",
+            "Назови одну черту характера соседа справа, которую ты ненавидишь.",
+            "Ты когда-нибудь писал в бассейн?",
+            "С кем из бывших ты бы переспал снова?",
+            "Какую часть тела ты бы в себе изменил?",
+            "Ты когда-нибудь крал деньги у родителей?",
+            "Назови самую глупую причину, по которой ты кого-то бросил.",
+            "Ты храпишь во сне?",
+            "Когда ты последний раз плакал и почему?",
+            "Ты ревнуешь своих друзей к другим?",
+            "Твое самое странное 'постыдное удовольствие' (Guilty Pleasure)?",
+            "Ты веришь в призраков или инопланетян?",
+            "Какую еду ты ненавидишь до тошноты?",
+            "Ты когда-нибудь отправлял сообщение, о котором жалел сразу же?",
+            "Если бы ты был другого пола на один день, что бы сделал первым делом?",
+            "Оцени свою внешность от 1 до 10 честно.",
+            "Какой самый странный сон тебе снился?"
+        ],
+        dare: [
+            "Изобрази тверк на 10 секунд.",
+            "Дай любому игроку шлепнуть тебя.",
+            "Позвони бывшему/бывшей и промяукай.",
+            "Выпей стакан воды без рук.",
+            "Оближи локоть соседа.",
+            "Сделай массаж ног игроку справа.",
+            "Съешь ложку чего угодно из холодильника (выбирают другие).",
+            "Дай свой телефон на 1 минуту другому игроку.",
+            "Стой в планке, пока другие игроки не разрешат встать (макс 1 мин).",
+            "Изобрази оргазм громко.",
+            "Лизни пол.",
+            "Позвони родителям и скажи, что тебя отчислили/уволили.",
+            "Опустоши свои карманы.",
+            "Пусть игрок слева нарисует усы тебе на лице.",
+            "Нюхай носки соседа справа 10 секунд.",
+            "Говори с акцентом следующие 3 раунда.",
+            "Сделай 20 приседаний прямо сейчас.",
+            "Положи лед себе в трусы и жди пока растает.",
+            "Выпей шот чего-нибудь соленого.",
+            "Отправь последнее фото из галереи 5-му контакту в мессенджере.",
+            "Читай рэп про игрока напротив.",
+            "Сними один предмет одежды.",
+            "Поцелуй руку каждому игроку в комнате.",
+            "Изображай обезьяну до следующего хода.",
+            "Выпей стакан воды залпом.",
+            "Изобрази курицу, которая несет яйцо.",
+            "Пусть группа сделает тебе смешную прическу, ходи так 2 раунда.",
+            "Съешь зубчик чеснока или кусок лука.",
+            "Говори шепотом до следующего своего хода.",
+            "Понюхай подмышку соседа слева.",
+            "Сделай мостик (или попытайся).",
+            "Разреши прочитать твое последнее отправленное СМС вслух.",
+            "Изобрази пьяного в стельку человека.",
+            "Танцуй медляк со шваброй или стулом.",
+            "Съешь кусочек лимона вместе с кожурой.",
+            "Позволь накрасить тебе губы (парням тоже).",
+            "Сделай селфи с унитазом и выложи в сторис на 5 минут.",
+            "Расскажи детский стишок, стоя на стуле.",
+            "Засунь палец в ухо соседу и держи 5 секунд.",
+            "Покажи историю браузера за сегодня."
+        ]
+    };
+
+    // --- GLOBAL LOGIC ---
+    let players = [];
+    let selectedGame = null;
+    
+    function handleEnter(e) { if(e.key === 'Enter') addPlayer(); }
+
+    function addPlayer() {
+        const input = document.getElementById('playerName');
+        const name = input.value.trim();
+        if (name && !players.includes(name)) {
+            players.push(name);
+            renderPlayers();
+            input.value = '';
+            input.focus();
+        }
+    }
+
+    function renderPlayers() {
+        document.getElementById('playersDisplay').innerHTML = players.map(p => 
+            `<span class="player-tag" style="--rot: ${Math.random()*10-5}deg">${p}</span>`
+        ).join('');
+    }
+
+    // 1. SELECT GAME
+    function selectGame(gameType) {
+        selectedGame = gameType;
+        showScreen('screen-setup');
+    }
+
+    // 2. LAUNCH GAME AFTER SETUP
+    function launchSelectedGame() {
+        if (players.length < 2) { alert("Минимум 2 игрока!"); return; }
+        
+        // Route to correct game init
+        if (selectedGame === 'tod') initTOD();
+        else if (selectedGame === 'roulette') initRoulette();
+        else if (selectedGame === 'clicker') initClicker();
+        else if (selectedGame === 'rps') initRPS();
+    }
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+    function getRandomPlayer() { return players[Math.floor(Math.random() * players.length)]; }
+
+    // --- TRUTH OR DARE ---
+    function initTOD() {
+        showScreen('screen-tod');
+        document.getElementById('tod-victim').innerText = "???";
+        document.getElementById('tod-task').innerText = "Готовься...";
+    }
+
+    function nextTOD(type) {
+        const list = tasks[type];
+        const task = list[Math.floor(Math.random() * list.length)];
+        const victimEl = document.getElementById('tod-victim');
+        const taskEl = document.getElementById('tod-task');
+        
+        let count = 0;
+        const interval = setInterval(() => {
+            victimEl.innerText = players[Math.floor(Math.random() * players.length)];
+            count++;
+            if(count > 8) {
+                clearInterval(interval);
+                victimEl.innerText = getRandomPlayer();
+                taskEl.innerText = task;
+                victimEl.style.color = type === 'truth' ? 'var(--electric-blue)' : 'var(--warning-red)';
+            }
+        }, 50);
+    }
+
+    // --- RUSSIAN ROULETTE ---
+    let chambers = 6;
+    let bulletPos = 0;
+    let currentChamber = 0;
+    let roulettePlayerIndex = 0;
+
+    function initRoulette() {
+        showScreen('screen-roulette');
+        chambers = 6;
+        currentChamber = 0;
+        bulletPos = Math.floor(Math.random() * 6); 
+        roulettePlayerIndex = Math.floor(Math.random() * players.length);
+        
+        document.getElementById('roulette-msg').innerText = "Барабан прокручен. Удачи.";
+        document.getElementById('roulette-msg').style.color = "white";
+        document.getElementById('cylinder').style.transform = "rotate(0deg)";
+        document.getElementById('cylinder').innerText = "💀";
+        document.getElementById('fire-btn').style.display = "inline-block";
+        document.getElementById('reset-roulette-btn').style.display = "none";
+        document.body.style.background = "var(--void-black)";
+        
+        updateRoulettePlayer();
+    }
+
+    function updateRoulettePlayer() {
+        document.getElementById('roulette-player').innerText = "Стреляет: " + players[roulettePlayerIndex];
+    }
+
+    function fireRoulette() {
+        const cyl = document.getElementById('cylinder');
+        const msg = document.getElementById('roulette-msg');
+        
+        // Rotation effect
+        cyl.style.transform = `rotate(${360 + (currentChamber * 60)}deg)`;
+
+        setTimeout(() => {
+            if (currentChamber === bulletPos) {
+                // BANG
+                msg.innerText = "ВЫСТРЕЛ! ТЫ ТРУП! (Пей до дна)";
+                msg.style.color = "var(--warning-red)";
+                cyl.innerText = "💥";
+                document.body.style.backgroundColor = "#500";
+                document.getElementById('fire-btn').style.display = "none";
+                document.getElementById('reset-roulette-btn').style.display = "inline-block";
+            } else {
+                // CLICK
+                msg.innerText = "ЩЕЛЧОК... Живи пока.";
+                msg.style.color = "var(--acid-green)";
+                currentChamber++;
+                roulettePlayerIndex = (roulettePlayerIndex + 1) % players.length;
+                updateRoulettePlayer();
+            }
+        }, 300);
+    }
+
+    // --- SPEED CLICKER ---
+    let clickCount = 0;
+    let clickTime = 10;
+    let clickTimerInt = null;
+    let clickSessionRecord = 0;
+
+    function initClicker() {
+        showScreen('screen-clicker');
+        resetClickerUI();
+    }
+
+    function resetClickerUI() {
+        document.getElementById('clicker-player').innerText = "След. игрок: " + getRandomPlayer();
+        document.getElementById('click-count').innerText = "0";
+        document.getElementById('click-timer').innerText = "10.00";
+        const btn = document.getElementById('click-btn');
+        btn.style.pointerEvents = "none";
+        btn.style.opacity = "0.5";
+        btn.innerText = "ЖМИ!";
+        document.getElementById('start-clicker-btn').style.display = "inline-block";
+        clickCount = 0;
+        clickTime = 10;
+    }
+
+    function startClickerRun() {
+        document.getElementById('start-clicker-btn').style.display = "none";
+        const btn = document.getElementById('click-btn');
+        btn.innerText = "3...";
+        
+        setTimeout(() => { btn.innerText = "2..."; }, 700);
+        setTimeout(() => { btn.innerText = "1..."; }, 1400);
+        setTimeout(() => {
+            btn.innerText = "🔥";
+            btn.style.pointerEvents = "auto";
+            btn.style.opacity = "1";
+            btn.style.background = "var(--hot-pink)";
+            
+            const startTime = Date.now();
+            clickTimerInt = setInterval(() => {
+                let elapsed = (Date.now() - startTime) / 1000;
+                let left = 10 - elapsed;
+                if (left <= 0) {
+                    endClickerGame();
+                } else {
+                    document.getElementById('click-timer').innerText = left.toFixed(2);
+                }
+            }, 50);
+        }, 2100);
+    }
+
+    function countClick() {
+        clickCount++;
+        document.getElementById('click-count').innerText = clickCount;
+        // Visual feedback
+        const btn = document.getElementById('click-btn');
+        btn.style.transform = "scale(0.9)";
+        setTimeout(() => btn.style.transform = "scale(1)", 50);
+    }
+
+    function endClickerGame() {
+        clearInterval(clickTimerInt);
+        document.getElementById('click-timer').innerText = "0.00";
+        const btn = document.getElementById('click-btn');
+        btn.style.pointerEvents = "none";
+        btn.style.opacity = "0.5";
+        btn.style.background = "var(--warning-red)";
+        btn.innerText = "СТОП";
+        
+        if (clickCount > clickSessionRecord) {
+            clickSessionRecord = clickCount;
+            document.getElementById('clicker-record').innerText = "🔥 НОВЫЙ РЕКОРД: " + clickSessionRecord;
+            alert(`МОЩЬ! Твой результат: ${clickCount}. Это новый рекорд!`);
+        } else {
+            alert(`Время вышло! Твой результат: ${clickCount}.`);
+        }
+        
+        setTimeout(resetClickerUI, 2000);
+    }
+
+    // --- RPS ---
+    function initRPS() {
+        showScreen('screen-rps');
+        document.getElementById('rps-player-name').innerText = getRandomPlayer() + ", твой ход!";
+        document.getElementById('rps-result').innerText = "";
+    }
+
+    function playRPS(choice) {
+        const bots = ['rock', 'paper', 'scissors'];
+        const botChoice = bots[Math.floor(Math.random() * 3)];
+        const resDiv = document.getElementById('rps-result');
+        let msg = "";
+        
+        if (choice === botChoice) { msg = "НИЧЬЯ! ПЕЙ!"; resDiv.style.color = "white"; }
+        else if (
+            (choice === 'rock' && botChoice === 'scissors') ||
+            (choice === 'paper' && botChoice === 'rock') ||
+            (choice === 'scissors' && botChoice === 'paper')
+        ) { msg = "ПОБЕДА!"; resDiv.style.color = "var(--acid-green)"; } 
+        else { msg = "ЛУЗЕР! ПЕЙ!"; resDiv.style.color = "var(--warning-red)"; }
+        
+        resDiv.innerHTML = `Комп: ${botChoice === 'rock'?'🗿':(botChoice==='paper'?'🧻':'✂️')} <br> ${msg}`;
+        setTimeout(() => {
+            document.getElementById('rps-player-name').innerText = getRandomPlayer() + ", теперь ты!";
+            resDiv.innerText = "";
+        }, 2000);
+    }
+</script>
+</body>
+</html>
             top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at 50% 50%, rgba(255,0,255,0.1), transparent);
             animation: pulse 2s infinite;

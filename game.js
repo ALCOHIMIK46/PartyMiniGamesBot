@@ -7,28 +7,26 @@ const state = {
 
   pirate: {
     idx: 0,            // индекс текущего игрока
-    situationIdx: 0    // номер текущей ситуации
+    situationIdx: 0    // порядковый номер ситуации (для раунда/счётчика)
   },
 
   roulette: {
-    alive: [],         // список игроков с флагом alive
+    alive: [],
     bulletIndex: 0,
     currentIdx: 0
   },
 
   clicker: {
     scores: [],
-    duration: 10,       // длина раунда кликера (сек)
+    duration: 10,
     timer: null,
     countdownTimer: null,
     phase: "idle"
   }
 };
 
-// сокращённый доступ к элементам
 function $(id) { return document.getElementById(id); }
 
-// ссылки на экраны
 const screens = {
   menu: $("screen-menu"),
   players: $("screen-players"),
@@ -37,7 +35,6 @@ const screens = {
   clicker: $("screen-clicker")
 };
 
-// переключение видимого экрана
 function showScreen(name) {
   Object.keys(screens).forEach(k => {
     screens[k].classList.toggle("hidden", k !== name);
@@ -46,7 +43,7 @@ function showScreen(name) {
 }
 
 // ================== ПИРАТСКИЕ СИТУАЦИИ (ТЕКСТ + ЗАДАНИЯ) ==================
-// Легко редактировать: просто добавляй/меняй объекты в этом массиве.
+// Тут легко редактировать/добавлять новые ситуации.
 
 const pirateSituations = [
   {
@@ -75,12 +72,235 @@ const pirateSituations = [
       }
     ]
   },
-  // ... (сюда просто копируешь остальные ситуации из прошлой версии)
-  // Я их не дублирую полностью, чтобы не забивать ответ.
+  {
+    text: "{player}, в трюме завёлся призрак старого пирата. Он жалуется, что вы шумите и оставляете грязную посуду. Как его успокоить?",
+    options: [
+      {
+        label: "УСТРОИТЬ ЕМУ ПИРАТСКИЙ КОНЦЕРТ",
+        taskText: "Задание: напой отрывок любой песни, но с пиратскими словами (вставляй 'ром', 'шлюпы', 'сундук', 'палуба'). Главное — не попадать в ноты, это только усилит эффект."
+      },
+      {
+        label: "ПРЕДЛОЖИТЬ ТАЛИСМАН",
+        taskText: "Задание: найди любой предмет вокруг и объяви его 'Священным Талисманом Спокойствия Призрака'. Опиши вслух, почему именно ОН спасёт всех от духов."
+      }
+    ]
+  },
+  {
+    text: "{player}, на горизонте показался вражеский корабль с флагом 'Мы просто спрашиваем дорогу'. Веришь им или готовишься к замесу?",
+    options: [
+      {
+        label: "ПОВЕРИТЬ И МАХАТЬ РУКОЙ",
+        taskText: "Задание: встань и изобрази беззвучную пантомиму 'Как пройти к ближайшему сундуку с золотом?'. Остальные должны угадать, что ты показываешь."
+      },
+      {
+        label: "ГОТОВИТЬСЯ К БОЮ",
+        taskText: "Задание: сделай 5 'пиратских приседаний' с боевым кличем 'ЙО‑ХО‑ХО' на каждое приседание. Если кто‑то из игроков не подхватил клич — обвиняй его в трусости."
+      }
+    ]
+  },
+  {
+    text: "{player}, степенный морской черепах‑оракул выполз на палубу и обещает ответить на один вопрос. Как с ним обращаешься?",
+    options: [
+      {
+        label: "ЗАДАТЬ СЕРЬЁЗНЫЙ ВОПРОС",
+        taskText: "Задание: задай вслух максимально тупой 'серьёзный' вопрос о своей пиратской судьбе. Пусть остальные по очереди дадут тебе оракульные ответы."
+      },
+      {
+        label: "ПОПРОСИТЬ УДАЧИ",
+        taskText: "Задание: сделай три круга вокруг своего места, каждый раз стукая кулаком по воображаемой штурвалу и говоря: 'Удача, не подведи, а то сам подведёшься!'"
+      }
+    ]
+  },
+  {
+    text: "{player}, на борту обнаружен шпион в одежде нормального туриста. Он делает селфи и спрашивает: 'А где тут Wi‑Fi?'. Как его раскусишь?",
+    options: [
+      {
+        label: "ПРОВЕСТИ ДОПРОС С ПРИСТРАСТИЕМ",
+        taskText: "Задание: задай любому игроку три 'шпионских' вопроса подряд (рандомных и странных). Если он смеётся хотя бы два раза — шпион раскрыт и ты победил."
+      },
+      {
+        label: "СДЕЛАТЬ ИЗ НЕГО ПИРАТА",
+        taskText: "Задание: придумай и вслух объяви этому 'туристу' пиратское имя и должность на корабле. Остальные обязаны обращаться к нему так до конца игры."
+      }
+    ]
+  },
+  {
+    text: "{player}, корабль встал на якорь у деревни, где все ходят задом наперёд и разговаривают странными голосами. Жители зовут тебя в местный ритуальный танец. Идёшь?",
+    options: [
+      {
+        label: "ТАНЦУЮ С НИМИ",
+        taskText: "Задание: покажи 10 секунд максимально дурацкий танец на месте. Руки, ноги, лицо – всё участвует. Остальные должны оценить танец словом 'Кринж' или 'Шедевр'."
+      },
+      {
+        label: "ПРИТВОРЯЮСЬ ЭКСПЕРТОМ",
+        taskText: "Задание: с умным видом объясни всем, что их странный ритуал на самом деле значит. Просто выдумай 'глубокий смысл' на ходу."
+      }
+    ]
+  },
+  {
+    text: "{player}, твой попугай украл важный ключ от сундука и сидит на реи, не собираясь спускаться. Чем будешь его уговаривать?",
+    options: [
+      {
+        label: "ПЕСНЯ ДЛЯ ПОПУГАЯ",
+        taskText: "Задание: пропой короткую колыбельную для попугая с его именем (если нет имени — назови его 'Клювостас'). Чем абсурднее текст, тем лучше."
+      },
+      {
+        label: "СДЕЛКА С ПТИЦЕЙ",
+        taskText: "Задание: пообещай попугаю вслух три абсолютно бесполезных 'привилегии' и торжественно их перечисли."
+      }
+    ]
+  },
+  {
+    text: "{player}, ночной сторож уснул у штурвала, и корабль медленно крутится кругами. Все проснулись, а виноватым назначили тебя. Что будешь делать?",
+    options: [
+      {
+        label: "ПРИНЯТЬ ВИНУ КАК ЛЕГЕНДА",
+        taskText: "Задание: произнеси торжественную речь о том, почему кружиться по кругу — это стратегический генплан. Минимум 20 секунд серьёзного бреда."
+      },
+      {
+        label: "СПИСАТЬ НА ШТОРМ",
+        taskText: "Задание: изобрази шторм телом: наклоняйся, шатаешься, делай вид, что вот‑вот упадёшь. Остальные оценивают шкалу шторма."
+      }
+    ]
+  },
+  {
+    text: "{player}, в капитанской каюте обнаружен дневник с записью: 'Кто это читает — тот следующий капитан'. Но там ещё много страниц. Прочитал ли ты это 'случайно'?",
+    options: [
+      {
+        label: "ДА, Я ТЕПЕРЬ КАПИТАН",
+        taskText: "Задание: в течение одного круга игры обращайся к себе в третьем лице как к капитану (например, 'Капитан {player} приказывает!')."
+      },
+      {
+        label: "НЕТ, Я ТУТ НИ ПРИ ЧЁМ",
+        taskText: "Задание: в течение одного круга игры перед каждым своим словом добавляй 'Я просто матрос, но...'."
+      }
+    ]
+  },
+  {
+    text: "{player}, на палубу занесло таинственный сундук без замка, но с надписью 'Не открывать до худших времён'. Сейчас вроде и так всё плохо. Что скажешь?",
+    options: [
+      {
+        label: "ОТКРЫТЬ СЕЙЧАС",
+        taskText: "Задание: перечисли вслух три самые дурацкие вещи, которые могли бы лежать в этом сундуке. Остальные выбирают 'каноничный' вариант."
+      },
+      {
+        label: "ПОДОЖДАТЬ ЕЩЁ ХУЖЕ",
+        taskText: "Задание: назови три признака того, что 'времена стали ещё хуже'. Если хоть один уже сбылся — громко удивись, будто сундук сам открылся."
+      }
+    ]
+  },
+  {
+    text: "{player}, команда спорит, как правильно кричать пиратский боевой клич. Все варианты мерзкие, но твой должен быть самым. Как поступишь?",
+    options: [
+      {
+        label: "ПРИДУМАЮ СВОЙ КЛИЧ",
+        taskText: "Задание: придумай и прокричи собственный боевой клич. Все остальные обязаны хором повторить его один раз."
+      },
+      {
+        label: "УСТРОЮ КОНКУРС КЛИЧЕЙ",
+        taskText: "Задание: возьми по одному боевому кличу у двух игроков, выбери самый кринжовый и объяви его официальным девизом раунда."
+      }
+    ]
+  },
+  {
+    text: "{player}, ты заметил, что гигантская акула следует за кораблём, как будто ждёт шоу. Может, она фанат? Что сделаешь?",
+    options: [
+      {
+        label: "УСТРОЮ ШОУ",
+        taskText: "Задание: станцуй 'акульий танец' руками 10 секунд. Остальные решают, стало ли страшнее или смешнее."
+      },
+      {
+        label: "ПОГОВОРЮ С АКУЛОЙ",
+        taskText: "Задание: произнеси 20 секунд монолог, обращаясь к воображаемой акуле, как к старому другу."
+      }
+    ]
+  },
+  {
+    text: "{player}, ночью ты услышал таинственный шёпот из корабельного колокола: 'Позвони, если хочешь приключений'. Ответишь на вызов?",
+    options: [
+      {
+        label: "ЗВОНИТЬ БЕЗ РАЗБОРА",
+        taskText: "Задание: 15 секунд 'звони' воображаемым людям и приглашай их в абсурдные пиратские приключения."
+      },
+      {
+        label: "СДЕЛАТЬ ВИД, ЧТО НИЧЕГО НЕ БЫЛО",
+        taskText: "Задание: 20 секунд сиди с максимально спокойным лицом, пока остальные пытаются тебя рассмешить."
+      }
+    ]
+  },
+  {
+    text: "{player}, в твой сундук кто‑то подкинул говорящий компас. Он показывает направление и ещё постоянно даёт советы. Что с ним делать?",
+    options: [
+      {
+        label: "СЛУШАТЬ КОМПАСА",
+        taskText: "Задание: выбери одного игрока 'говорящим компасом'. В следующий круг спрашивай у него разрешение на любое своё действие."
+      },
+      {
+        label: "ИГНОРИРОВАТЬ КОМПАСА",
+        taskText: "Задание: придумай три идиотских направления ('туда, где пахнет жареным' и т.п.) и объяви их новой системой навигации."
+      }
+    ]
+  },
+  {
+    text: "{player}, на палубе завели модный пиратский спорт: 'метание деревянной ноги в воображаемую цель'. Тебя записали участником.",
+    options: [
+      {
+        label: "ИГРАТЬ ПО ЧЕСТНЯКУ",
+        taskText: "Задание: изобрази бросок воображаемой деревянной ноги, выкрикнув название своего боевого стиля."
+      },
+      {
+        label: "СДЕЛАТЬ ИЗ ЭТОГО ШОУ",
+        taskText: "Задание: прокомментируй свой бросок как спортивный комментатор: подготовка, бросок и интервью с собой."
+      }
+    ]
+  },
+  {
+    text: "{player}, в бочке с провизией ты нашёл странный фрукт с улыбающейся мордой. Он шепчет: 'Съешь меня, будет весело'.",
+    options: [
+      {
+        label: "СЪЕСТЬ ФРУКТ",
+        taskText: "Задание: 20 секунд веди себя так, будто у тебя суперспособность (всё рифмуешь, говоришь шёпотом или очень медленно)."
+      },
+      {
+        label: "ПОСАДИТЬ ФРУКТОВОГО ДРУГА",
+        taskText: "Задание: выбери место и объяви его 'священным горшком фрукта'. Все один раз поклоняются этому месту."
+      }
+    ]
+  },
+  {
+    text: "{player}, команда спорит, кто будет рассказчиком у костра сегодня. Все показывают на тебя. Отмазаться не получится.",
+    options: [
+      {
+        label: "СТРАШНАЯ ИСТОРИЯ",
+        taskText: "Задание: придумай и расскажи короткую жутко‑глупую историю о пирате, который потерял не то сокровища, не то носки."
+      },
+      {
+        label: "ГЕРОИЧЕСКАЯ ИСТОРИЯ",
+        taskText: "Задание: расскажи, как сегодня ты геройски довёл корабль до этого стола/комнаты. Врать можно и нужно."
+      }
+    ]
+  },
+  {
+    text: "{player}, на мачте появился плакат: 'Требуется пират недели'. Все смотрят на тебя подозрительно. Как докажешь, что достоин?",
+    options: [
+      {
+        label: "САМОПРЕЗЕНТАЦИЯ",
+        taskText: "Задание: встань и представься как 'пират недели', перечислив минимум три своих 'достоинства'."
+      },
+      {
+        label: "ЧЁРНЫЙ ПИАР",
+        taskText: "Задание: придумай по одной шуточной 'пиратской слабости' для двух других игроков и объясни, почему им нельзя быть пиратом недели."
+      }
+    ]
+  }
 ];
 
-// Подготовка массива индексов ситуаций и перемешивание,
-// чтобы шли в рандомном порядке (можно выключить, если не нужно).
+// ----- РАНДОМНЫЙ ПОРЯДОК ВОПРОСОВ (Вариант 1) -----
+
+// pirateOrder = список индексов ситуаций (0..N-1), который мы перемешиваем.
+// Каждый запуск игры порядок новый, но внутри одной игры ситуации не повторяются,
+// пока не пройдём весь список.
+
 let pirateOrder = pirateSituations.map((_, i) => i);
 
 function shufflePirateOrder() {
@@ -125,14 +345,12 @@ const countInput = $("players-count");
 const nicksContainer = $("nicks-container");
 const warningEl = $("players-warning");
 
-// подготовить экран (по умолчанию 2 игрока)
 function setupPlayersScreen() {
   countInput.value = 2;
   renderNickInputs(2);
   warningEl.textContent = "";
 }
 
-// нарисовать поля ников
 function renderNickInputs(count) {
   nicksContainer.innerHTML = "";
   for (let i = 0; i < count; i++) {
@@ -154,7 +372,6 @@ function renderNickInputs(count) {
   }
 }
 
-// при изменении количества игроков
 countInput.addEventListener("change", () => {
   let v = parseInt(countInput.value || "2", 10);
   if (isNaN(v)) v = 2;
@@ -164,7 +381,6 @@ countInput.addEventListener("change", () => {
   renderNickInputs(v);
 });
 
-// запуск игры после ввода ников
 $("btn-start-game").addEventListener("click", () => {
   const count = parseInt(countInput.value || "2", 10);
   if (isNaN(count) || count < 2 || count > 6) {
@@ -196,13 +412,12 @@ $("btn-start-game").addEventListener("click", () => {
   }
 });
 
-// ================== ПИРАТСКИЙ БУХЕЧ: ЛОГИКА ==================
+// ================== ПИРАТСКИЙ БУХЕЧ (с рандомным порядком) ==================
 
 const pirateSitEl = $("pirate-situation");
 const pirateRoundLabel = $("pirate-round-label");
 const pirateCurrentPlayer = $("pirate-current-player");
 const pirateSitCounter = $("pirate-sit-counter");
-const pirateMinigame = $("pirate-minigame");
 const pirateSpeech = $("pirate-speech");
 const pirateLog = $("pirate-log");
 const pirateBtn1 = $("pirate-btn-1");
@@ -214,7 +429,7 @@ function startPirate() {
   state.pirate.idx = 0;
   state.pirate.situationIdx = 0;
 
-  // Перемешиваем порядок ситуаций, чтобы каждый запуск был разный
+  // ВАЖНО: каждый запуск игры перемешиваем порядок вопросов
   shufflePirateOrder();
 
   showScreen("pirate");
@@ -225,12 +440,13 @@ $("btn-back-from-pirate").addEventListener("click", () => {
   showScreen("menu");
 });
 
-// показать следующую ситуацию
+// Показ следующего вопроса/ситуации
 function nextPirateTurn() {
   pirateMiniRunning = false;
 
   const p = state.players[state.pirate.idx];
-  // берём индекс ситуации из перемешанного списка
+
+  // Берём индекс ситуации из перемешанного списка pirateOrder
   const orderIndex = state.pirate.situationIdx % pirateSituations.length;
   const sitIdx = pirateOrder[orderIndex];
   const situation = pirateSituations[sitIdx];
@@ -242,7 +458,7 @@ function nextPirateTurn() {
   const text = situation.text.replace(/{player}/g, p.name);
   pirateSitEl.textContent = text;
 
-  // Обновляем подписи на кнопках (первый <span> внутри)
+  // Обновляем подписи на кнопках (берём первый <span> в каждой)
   pirateBtn1.querySelector("span").textContent = situation.options[0].label;
   pirateBtn2.querySelector("span").textContent = situation.options[1].label;
 
@@ -251,7 +467,7 @@ function nextPirateTurn() {
   pirateLog.textContent = "Выбери вариант, затем выполняй задание как честный пират‑кринжан.";
 }
 
-// перейти к следующему игроку / ситуации
+// Переход к следующему игроку и следующей ситуации в очереди
 function advancePiratePlayer() {
   state.pirate.idx = (state.pirate.idx + 1) % state.players.length;
   state.pirate.situationIdx++;
@@ -260,7 +476,7 @@ function advancePiratePlayer() {
   }, 500);
 }
 
-// обработчики кнопок выбора варианта
+// Обработка клика по 1‑му варианту
 pirateBtn1.addEventListener("click", () => {
   if (pirateMiniRunning) return;
   pirateMiniRunning = true;
@@ -273,13 +489,13 @@ pirateBtn1.addEventListener("click", () => {
   pirateSpeech.textContent = situation.options[0].taskText.replace(/{player}/g, state.players[state.pirate.idx].name);
   pirateLog.textContent = "Выполняй задание, потом игра сама включит следующего бедолагу.";
 
-  // даём время на выполнение задания
   setTimeout(() => {
     pirateMiniRunning = false;
     advancePiratePlayer();
   }, 8000);
 });
 
+// Обработка клика по 2‑му варианту
 pirateBtn2.addEventListener("click", () => {
   if (pirateMiniRunning) return;
   pirateMiniRunning = true;
@@ -324,7 +540,6 @@ function startRoulette() {
   updateRouletteUI();
 }
 
-// рисуем барабан
 function setupChamber() {
   chamberEl.innerHTML = "";
   const radius = 36;
@@ -343,7 +558,6 @@ function setupChamber() {
   }
 }
 
-// расставляем игроков по кругу
 function renderRoulettePlayers() {
   roulettePlayersWrap.innerHTML = "";
   const alive = state.roulette.alive;
@@ -379,7 +593,6 @@ function renderRoulettePlayers() {
   });
 }
 
-// обновляем подсветку текущего и счётчик живых
 function updateRouletteUI() {
   const alive = state.roulette.alive.filter(p => p.alive);
   rouletteAliveCount.textContent = alive.length;
@@ -395,7 +608,6 @@ rouletteFireBtn.addEventListener("click", () => {
   fireRoulette();
 });
 
-// выстрел
 function fireRoulette() {
   const players = state.roulette.alive;
   const alivePlayers = players.filter(p => p.alive);
@@ -445,7 +657,6 @@ function fireRoulette() {
   }, 850);
 }
 
-// переход хода
 function nextRoulettePlayer() {
   const players = state.roulette.alive;
   let idx = state.roulette.currentIdx;
@@ -459,7 +670,6 @@ function nextRoulettePlayer() {
   updateRouletteUI();
 }
 
-// проверка победителя
 function checkRouletteWinner() {
   const alive = state.roulette.alive.filter(p => p.alive);
   if (alive.length === 1) {
@@ -475,7 +685,7 @@ function checkRouletteWinner() {
   }
 }
 
-// ================== КОНФЕТТИ (общая функция) ==================
+// ================== КОНФЕТТИ ==================
 
 function spawnConfetti() {
   for (let i = 0; i < 60; i++) {
@@ -510,7 +720,6 @@ function startClicker() {
   startClickerCountdown();
 }
 
-// рисуем зоны игроков
 function renderClickerColumns() {
   clickerArea.innerHTML = "";
   const colors = [
@@ -542,7 +751,6 @@ function renderClickerColumns() {
     bill.className = "bill";
     bill.id = "bill-" + i;
 
-    // лягушка
     const frog = document.createElement("div");
     frog.className = "frog-face";
     const eyeL = document.createElement("div");
@@ -582,12 +790,9 @@ function renderClickerColumns() {
 function updateClickerScore(i) {
   const score = state.clicker.scores[i];
   const el = $("clicker-score-" + i);
-  if (el) {
-    el.textContent = score + " хрюблей";
-  }
+  if (el) el.textContent = score + " хрюблей";
 }
 
-// обратный отсчёт перед стартом
 function startClickerCountdown() {
   stopClickerTimers();
   state.clicker.phase = "countdown";
@@ -607,7 +812,6 @@ function startClickerCountdown() {
   state.clicker.countdownTimer = timer;
 }
 
-// сам раунд кликов
 function startClickerPlay() {
   state.clicker.phase = "play";
   clickerResult.textContent = "";
@@ -627,7 +831,6 @@ function startClickerPlay() {
   state.clicker.timer = timer;
 }
 
-// окончание раунда, подсчёт победителя
 function finishClicker() {
   state.clicker.phase = "done";
   clickerCountdown.textContent = "СТОП, карманы полные!";
@@ -655,7 +858,6 @@ function finishClicker() {
   }
 }
 
-// бабушки‑бустеры
 function spawnBoosters() {
   const spawnOne = () => {
     if (state.clicker.phase !== "play") return;
@@ -685,7 +887,6 @@ function spawnBoosters() {
   }, 1300);
 }
 
-// остановка таймеров при выходе
 function stopClickerTimers() {
   if (state.clicker.timer) {
     clearInterval(state.clicker.timer);
